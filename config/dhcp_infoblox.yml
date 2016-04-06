@@ -1,0 +1,8 @@
+---
+#
+# Configuration file for 'infoblox dns provider
+#
+
+:infoblox_user: "infoblox"
+:infoblox_pw: "infoblox"
+infoblox_host: "infoblox.my.domain"
