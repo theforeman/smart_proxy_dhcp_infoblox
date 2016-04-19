@@ -1,8 +1,8 @@
 require 'smart_proxy_dhcp_infoblox/dhcp_infoblox_version'
 
-module Proxy::Dhcp::Infoblox
+module Proxy::DHCP::Infoblox
   class Plugin < ::Proxy::Provider
-    plugin :dhcp_infoblox, ::Proxy::Dhcp::Infoblox::VERSION, :factory => proc { |attrs| ::Proxy::Dhcp::Infoblox::Provider.provider(attrs) }
+    plugin :dhcp_infoblox, ::Proxy::DHCP::Infoblox::VERSION, :provider_class => "::Proxy::DHCP::Infoblox::Provider"
 
     # Settings listed under default_settings are required.
     # An exception will be raised if they are initialized with nil values.
@@ -10,8 +10,6 @@ module Proxy::Dhcp::Infoblox
     default_settings :infoblox_user => 'infoblox', :infoblox_pw => 'infoblox', :infoblox_host => 'infoblox.my.domain'
 
     requires :dhcp, '>= 1.11'
-
-    #validate_presence :infoblox_user, :infoblox_pw, :infoblox_host
 
     after_activation do
       require 'smart_proxy_dhcp_infoblox/dhcp_infoblox_main'

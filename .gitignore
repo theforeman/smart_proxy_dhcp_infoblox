@@ -1,0 +1,9 @@
+.idea
+*.gem
+pkg/
+logs
+Gemfile.lock
+.rbenv*
+.rvmrc*
+.ruby-*
+tags

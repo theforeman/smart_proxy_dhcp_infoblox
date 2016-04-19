@@ -1,8 +1,8 @@
 ---
 #
-# Configuration file for 'infoblox dns provider
+# Configuration file for 'dhcp_infoblox' dhcp provider
 #
-
+# Infoblox Server settings:
 :infoblox_user: "infoblox"
 :infoblox_pw: "infoblox"
-infoblox_host: "infoblox.my.domain"
+:infoblox_host: "infoblox.my.domain"
