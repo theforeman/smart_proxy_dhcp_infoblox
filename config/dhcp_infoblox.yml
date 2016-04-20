@@ -2,7 +2,7 @@
 #
 # Configuration file for 'dhcp_infoblox' dhcp provider
 #
-# Infoblox Server settings:
+# use :server setting in dhcp.yml if you are managing a dhcp server which is not localhost
+# Infoblox settings:
 :infoblox_user: "infoblox"
 :infoblox_pw: "infoblox"
-:infoblox_host: "infoblox.my.domain"

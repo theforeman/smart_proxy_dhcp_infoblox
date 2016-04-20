@@ -6,12 +6,14 @@ module Proxy::DHCP::Infoblox
     include Proxy::Log
     include Proxy::Util
 
-    attr_reader :infoblox_user, :infoblox_pw, :infoblox_host
+    attr_reader :infoblox_user, :infoblox_pw, :server
 
     def initialize
-      super(Proxy::DhcpPlugin.settings.server)
       # TODO: Verify input
-      @connection = ::Infoblox::Connection.new(username: @infoblox_user ,password: @infoblox_pw, host: @infoblox_host)
+      server = Proxy::DhcpPlugin.settings.server
+      infoblox_user = Proxy::DHCP::Infoblox::Plugin.settings.infoblox_user
+      infoblox_pw = Proxy::DHCP::Infoblox::Plugin.settings.infoblox_pw
+      @connection = ::Infoblox::Connection.new(username: infoblox_user ,password: infoblox_pw, host: server)
     end
 
     def initialize_for_testing(params)
@@ -24,32 +26,38 @@ module Proxy::DHCP::Infoblox
     end
 
     def load_subnets
-      ::Infoblox::Network.all(connection).each do |obj|
+      logger.debug "load_subnets"
+      ::Infoblox::Network.all(@connection).each do |obj|
         if match = obj.network.split('/')
           tmp = IPAddr.new(obj.network)
           netmask = IPAddr.new(tmp.instance_variable_get("@mask_addr"), Socket::AF_INET).to_s
           next unless managed_subnet? "#{match[0]}/#{netmask}"
-          Proxy::DHCP::Subnet.new(self, match[0], netmask)
+          options = {}
+          service.add_subnets(Proxy::DHCP::Subnet.new(match[0], netmask, options))
         end
       end
     end
 
     def find_subnet(network_address)
       # returns Proxy::DHCP::Subnet that has network_address or nil if none was found
+      #network = ::Infoblox::Ipv4address.find(connection, "ip_address" => network_address).first.network
+      super
     end
 
     def load_subnet_data subnet
       # Load network from infoblox, iterate over ips to gather additional settings
       logger.debug "LoadSubnetData"
+      logger.debug subnet.inspect
       super
       network = IPAddr.new(subnet.to_s, Socket::AF_INET)
+      logger.debug network
       # max results are currently set to work in my setup, one could calculate that setting by looking at netmask :)
-      network = ::Infoblox::Ipv4address.find(connection, "network" => "#{network}/#{subnet.cidr}", "_max_results" => "2500")
+      network = ::Infoblox::Ipv4address.find(@connection, "network" => "#{network}/#{subnet.cidr}", "_max_results" => "2500")
       # Find out which hosts are in use
       network.each do |host|
         # next if certain values are not set
         next if host.names.empty? || host.mac_address.empty? || host.ip_address.empty?
-        hostdhcp = ::Infoblox::HostIpv4addr.find(connection, "ipv4addr" => host.ip_address).first
+        hostdhcp = ::Infoblox::HostIpv4addr.find(@connection, "ipv4addr" => host.ip_address).first
         next unless hostdhcp.configure_for_dhcp
         opts = {:hostname => host.names.first}
         opts[:mac] = host.mac_address
@@ -62,9 +70,9 @@ module Proxy::DHCP::Infoblox
       end
     end
 
-    def subnets
-      # returns all available subnets (instances of Proxy::DHCP::Subnet)
-    end
+    #def subnets
+    #  # returns all available subnets (instances of Proxy::DHCP::Subnet)
+    #end
 
     def all_hosts(network_address)
       # returns all reservations in a subnet with network_address
@@ -78,16 +86,16 @@ module Proxy::DHCP::Infoblox
       logger.debug "loadRecord"
       # if record is a String it can be either ip or mac, true = mac --> lookup ip
       if record.is_a?(String) && (IPAddr.new(record) rescue nil).nil?
-        hostdhcp = ::Infoblox::HostIpv4addr.find(connection, "mac" => record).first
+        hostdhcp = ::Infoblox::HostIpv4addr.find(@connection, "mac" => record).first
         ipv4address = hostdhcp.ipv4addr
       elsif record.is_a?(String)
         ipv4address = record
       end
       ipv4address = record[:ip] if record.is_a?(Proxy::DHCP::Record)
       ipv4address = record.to_s if record.is_a?(IPAddr)
-      host = ::Infoblox::Host.find(connection, "ipv4addr" => ipv4address).first
+      host = ::Infoblox::Host.find(@connection, "ipv4addr" => ipv4address).first
       return nil if host.nil? || host.name.empty?
-      hostdhcp = ::Infoblox::HostIpv4addr.find(connection, "ipv4addr" => ipv4address).first
+      hostdhcp = ::Infoblox::HostIpv4addr.find(@connection, "ipv4addr" => ipv4address).first
       return nil unless hostdhcp.configure_for_dhcp
       return nil if hostdhcp.mac.empty? || hostdhcp.ipv4addr.empty?
       opts = {:hostname => host.name}
@@ -101,25 +109,24 @@ module Proxy::DHCP::Infoblox
       Proxy::DHCP::Record.new(opts.merge(:subnet => subnet))
     end
 
+    def create_infoblox_host_record options={}
+      logger.debug "create_infoblox_host_record"
+      host = ::Infoblox::Host.new(:connection => @connection)
+      host.name = record.name
+      host.add_ipv4addr(record.ip)
+      host.post
+    end
+
     def add_record options={}
       logger.debug "Add Record"
       record = super(options)
       
-      host = ::Infoblox::Host.find(connection, "ipv4addr" => record.ip)
+      host = ::Infoblox::Host.find(@connection, "ipv4addr" => record.ip)
       # If empty create:
       if host.empty?
-        logger.debug "Add Record - Create"
-        # Create new host object
-        host = ::Infoblox::Host.new(:connection => connection)
-        host.name = record.name
-        host.add_ipv4addr(record.ip)
-        post = true
-      else
-        logger.debug "Add Record - Exists using first element"
-        # if not empty, first element is what we want to edit
-        host = host.first
-        post = false
+        create_infoblox_host_record(options)
       end
+      host = ::Infoblox::Host.find(@connection, "ipv4addr" => record.ip).first
       options = record.options
       # Overwrite values without checking
       # Select correct ipv4addr object from ipv4addrs array
@@ -146,7 +153,7 @@ module Proxy::DHCP::Infoblox
      # TODO: Refactor this into the base class
      raise InvalidRecord, "#{record} is static - unable to delete" unless record.deleteable?
      # "Deleting"" a record here means just disabling dhcp
-     host = ::Infoblox::Host.find(connection, "ipv4addr" => record.ip)
+     host = ::Infoblox::Host.find(@connection, "ipv4addr" => record.ip)
      unless host.empty?
        # if not empty, first element is what we want to edit
        host = host.first
