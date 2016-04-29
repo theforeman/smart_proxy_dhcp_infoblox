@@ -7,7 +7,12 @@ module Proxy::DHCP::Infoblox
     # Settings listed under default_settings are required.
     # An exception will be raised if they are initialized with nil values.
     # Settings not listed under default_settings are considered optional and by default have nil value.
-    default_settings :infoblox_user => 'infoblox', :infoblox_pw => 'infoblox', :infoblox_host => 'infoblox.my.domain'
+    default_settings :infoblox_user => 'infoblox',
+     :infoblox_pw => 'infoblox',
+     :infoblox_host => 'infoblox.my.domain',
+     :record_type => 'host',
+     :wapi_version => '2.0'
+     :range => false
 
     requires :dhcp, '>= 1.11'
 

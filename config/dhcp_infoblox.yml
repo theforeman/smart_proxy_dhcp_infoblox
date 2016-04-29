@@ -6,3 +6,9 @@
 # Infoblox settings:
 :infoblox_user: "infoblox"
 :infoblox_pw: "infoblox"
+#Record type to manage. Can be "host" or "fixed_address"
+:record_type: 'host'
+#infoblox api version
+:wapi_version: '2.0'
+#Use  pre-definded ranges in networks to find available IP's
+:range: false
