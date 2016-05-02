@@ -15,7 +15,6 @@ module Proxy::DHCP::Infoblox
       infoblox_pw = Proxy::DHCP::Infoblox::Plugin.settings.infoblox_pw
       @record_type = Proxy::DHCP::Infoblox::Plugin.settings.record_type
       wapi_version = Proxy::DHCP::Infoblox::Plugin.settings.wapi_version
-      @range = Proxy::DHCP::Infoblox::Plugin.settings.range
       ::Infoblox.wapi_version = "#{wapi_version}"
       @connection = ::Infoblox::Connection.new(username: infoblox_user, password: infoblox_pw, host: server)
       logger.debug "Loaded infoblox provider with #{@record_type} record_type and #{wapi_version} wapi_version"
@@ -75,17 +74,17 @@ module Proxy::DHCP::Infoblox
           opts[:nextServer] = hostdhcp.nextserver unless hostdhcp.use_nextserver
           opts[:filename] = hostdhcp.bootfile unless hostdhcp.use_bootfile
           service.add_host(subnet.network, Proxy::DHCP::Reservation.new(opts.merge(:subnet => subnet)))
-	      end
+        end
       elsif @record_type == 'fixed_address'
-	       network = ::Infoblox::Fixedaddress.find(@connection, 'network' => "#{subnet.network}/#{subnet.cidr}", '_max_results' => 2**(32-subnet.cidr))
-         network.each do |host|
-	          logger.debug "Processing host: #{host.name} #{host.mac} #{host.ipv4addr}"
-	          next if host.name == nil || host.mac == nil || host.ipv4addr == nil
-            opts = { :hostname => host.name }
-            opts[:mac] = host.mac
-            opts[:ip] = host.ipv4addr
-            service.add_host(subnet.network, Proxy::DHCP::Reservation.new(opts.merge(:subnet => subnet)))
-	      end
+        network = ::Infoblox::Fixedaddress.find(@connection, 'network' => "#{subnet.network}/#{subnet.cidr}", '_max_results' => 2**(32-subnet.cidr))
+        network.each do |host|
+          logger.debug "Processing host: #{host.name} #{host.mac} #{host.ipv4addr}"
+          next if host.name == nil || host.mac == nil || host.ipv4addr == nil
+          opts = { :hostname => host.name }
+          opts[:mac] = host.mac
+          opts[:ip] = host.ipv4addr
+          service.add_host(subnet.network, Proxy::DHCP::Reservation.new(opts.merge(:subnet => subnet)))
+        end
       end
     end
 
@@ -100,13 +99,10 @@ module Proxy::DHCP::Infoblox
       # returns first available ip address in a subnet with network_address, for a host with mac_address, in the range of ip addresses: from_ip_address, to_ip_address
       # Deliberatly ignoring everything but first argument
       logger.debug "Infoblox unused_ip Network_address: #{network_address} #{mac_address}, #{from_ip_address}, #{to_ip_address}"
-      if @range == true
-        ::Infoblox::Range.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip
-      else
-        ::Infoblox::Network.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip
-        # Idea for randomisation in case of concurrent installs:
-        #::Infoblox::Network.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(15).sample
-      end
+      #::Infoblox::Network.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip
+      ::Infoblox::Range.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip
+      # Idea for randomisation in case of concurrent installs:
+      #::Infoblox::Network.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(15).sample
     end
 
     def find_record(subnet_address, an_address)
@@ -138,9 +134,14 @@ module Proxy::DHCP::Infoblox
         opts[:nextServer] = hostdhcp.nextserver if hostdhcp.use_nextserver
         opts[:filename] = hostdhcp.bootfile if hostdhcp.use_bootfile
       elsif @record_type == 'fixed_address'
+        logger.debug "find_record for #{an_address}"
         fixed_address = ::Infoblox::Fixedaddress.find(@connection, 'ipv4addr' => ipv4address)
-        return nil if fixed_address.emtpy? || fixed_address.first.name.empty?
+        #logger.debug "#{fixed_address.inspect}"
+        return nil if fixed_address == []
+        #return nil if fixed_address.emtpy? || fixed_address.first.name.empty?
+        #return nil if fixed_address.emtpy?
         opts = { :hostname => fixed_address.first.name }
+        opts[:deleteable] = true
         opts[:mac] = fixed_address.first.mac
         opts[:ip] = fixed_address.first.ipv4addr
       end
@@ -221,7 +222,7 @@ module Proxy::DHCP::Infoblox
         end
       elsif @record_type == 'fixed_address'
         #Delete the fixed address record.
-        fixed_address = Infoblox::Fixedaddress.find(@connection, {ipv4addr: record.ip, mac: record.mac}).first
+        fixed_address = ::Infoblox::Fixedaddress.find(@connection, 'ipv4addr' => record.ip).first
         fixed_address.delete
       end
 
