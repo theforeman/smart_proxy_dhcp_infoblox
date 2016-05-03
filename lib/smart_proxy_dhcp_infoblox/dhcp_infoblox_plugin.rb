@@ -11,7 +11,7 @@ module Proxy::DHCP::Infoblox
      :infoblox_pw => 'infoblox',
      :infoblox_host => 'infoblox.my.domain',
      :record_type => 'host',
-     :wapi_version => '2.0'
+     :wapi_version => '2.0',
      :range => false
 
     requires :dhcp, '>= 1.11'
