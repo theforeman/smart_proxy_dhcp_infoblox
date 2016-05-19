@@ -14,6 +14,7 @@ module Proxy::DHCP::Infoblox
       infoblox_user = Proxy::DHCP::Infoblox::Plugin.settings.infoblox_user
       infoblox_pw = Proxy::DHCP::Infoblox::Plugin.settings.infoblox_pw
       @record_type = Proxy::DHCP::Infoblox::Plugin.settings.record_type
+      @range = Proxy::DHCP::Infoblox::Plugin.settings.range
       wapi_version = Proxy::DHCP::Infoblox::Plugin.settings.wapi_version
       ::Infoblox.wapi_version = "#{wapi_version}"
       @connection = ::Infoblox::Connection.new(username: infoblox_user, password: infoblox_pw, host: server)
@@ -99,8 +100,11 @@ module Proxy::DHCP::Infoblox
       # returns first available ip address in a subnet with network_address, for a host with mac_address, in the range of ip addresses: from_ip_address, to_ip_address
       # Deliberatly ignoring everything but first argument
       logger.debug "Infoblox unused_ip Network_address: #{network_address} #{mac_address}, #{from_ip_address}, #{to_ip_address}"
-      #::Infoblox::Network.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip
-      ::Infoblox::Range.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip
+      if @range 
+        ::Infoblox::Range.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip
+      else
+        ::Infoblox::Network.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip
+      end
       # Idea for randomisation in case of concurrent installs:
       #::Infoblox::Network.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(15).sample
     end
