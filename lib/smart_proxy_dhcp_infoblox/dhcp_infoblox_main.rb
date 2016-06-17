@@ -1,5 +1,6 @@
 require 'dhcp_common/server'
 require 'infoblox'
+require 'ipaddr'
 
 module Proxy::DHCP::Infoblox
   class Provider < ::Proxy::DHCP::Server
@@ -100,10 +101,29 @@ module Proxy::DHCP::Infoblox
       # returns first available ip address in a subnet with network_address, for a host with mac_address, in the range of ip addresses: from_ip_address, to_ip_address
       # Deliberatly ignoring everything but first argument
       logger.debug "Infoblox unused_ip Network_address: #{network_address} #{mac_address}, #{from_ip_address}, #{to_ip_address}"
-      if @range 
-        ::Infoblox::Range.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip
+      #next_available_ip can take a number to return (1), and an array of ips to exclude. So, we need to:
+      #build a list of all ips in the network (all_addresses)
+      #build a list of all ips in between from_ip_address and to_ip_address (include_addresses)
+      #remove all of the from_ip_address and to_ip_address from the all_address (exclude_addresses)
+      #and call next_available_ip with exclude_addresses passed
+      all_addresses = Array.new
+      net=IPAddr.new("#{network_address.network}/#{network_address.cidr}")
+      net.to_range.each do |ip|
+        all_addresses.push(ip.to_s)
+      end
+      range_start=IPAddr.new(from_ip_address)
+      range_stop=IPAddr.new(to_ip_address)
+      included_addresses=Array.new
+      (range_start..range_stop).each do |ip|
+        included_addresses.push(ip.to_s)
+      end
+      excluded_addresses=all_addresses-included_addresses
+      #excluded_addresses is now an array of ips containing all the ips from the network not between from, and to_ip_address
+
+      if @range
+        ::Infoblox::Range.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(1,excluded_addresses)
       else
-        ::Infoblox::Network.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip
+        ::Infoblox::Network.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(1,excluded_addresses)
       end
       # Idea for randomisation in case of concurrent installs:
       #::Infoblox::Network.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(15).sample
