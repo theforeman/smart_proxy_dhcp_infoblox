@@ -12,3 +12,7 @@
 :wapi_version: '2.0'
 #Use  pre-definded ranges in networks to find available IP's
 :range: false
+#Load subnets from Infoblox, if false subnets from dhcp.yml are loaded
+#:infoblox_subnets: true
+#:restart_sleep: 15
+#:restart: true

@@ -16,6 +16,10 @@ module Proxy::DHCP::Infoblox
       infoblox_pw = Proxy::DHCP::Infoblox::Plugin.settings.infoblox_pw
       @record_type = Proxy::DHCP::Infoblox::Plugin.settings.record_type
       @range = Proxy::DHCP::Infoblox::Plugin.settings.range
+      @infoblox_subnets = Proxy::DHCP::Infoblox::Plugin.settings.infoblox_subnets
+      @restart_sleep = Proxy::DHCP::Infoblox::Plugin.settings.restart_sleep
+      @restart = Proxy::DHCP::Infoblox::Plugin.settings.restart
+      @managed_subnets = Proxy::DhcpPlugin.settings.subnets
       wapi_version = Proxy::DHCP::Infoblox::Plugin.settings.wapi_version
       ::Infoblox.wapi_version = "#{wapi_version}"
       @connection = ::Infoblox::Connection.new(username: infoblox_user, password: infoblox_pw, host: server)
@@ -30,18 +34,34 @@ module Proxy::DHCP::Infoblox
       @password = params[:password] || @password
       @record_type = params[:record_type] || @record_type
       @wapi_version = params[:wapi_version] || @wapi_version
+      @infoblox_subnets = params[:infoblox_subnets] || @infoblox_subnets
+      @restart_sleep = params[:restart_sleep] || @restart_sleep
+      @restart = params[:restart] || @restart
+      @managed_subnets = params[:managed_subnets] || @managed_subnets
       self
+    end
+
+    def restart_services
+      ::Infoblox::Grid.all(@connection).first.restartservices
     end
 
     def load_subnets
       logger.debug 'load_subnets'
-      ::Infoblox::Network.all(@connection).each do |obj|
-        if match = obj.network.split('/')
-          tmp = IPAddr.new(obj.network)
-          netmask = IPAddr.new(tmp.instance_variable_get("@mask_addr"), Socket::AF_INET).to_s
-          next unless managed_subnet? "#{match[0]}/#{netmask}"
+      if @infoblox_subnets
+        ::Infoblox::Network.all(@connection).each do |obj|
+          if match = obj.network.split('/')
+            tmp = IPAddr.new(obj.network)
+            netmask = IPAddr.new(tmp.instance_variable_get("@mask_addr"), Socket::AF_INET).to_s
+            next unless managed_subnet? "#{match[0]}/#{netmask}"
+            options = {}
+            service.add_subnets(Proxy::DHCP::Subnet.new(match[0], netmask, options))
+          end
+        end
+      else
+        @managed_subnets.each do |obj|
+          match = obj.split('/')
           options = {}
-          service.add_subnets(Proxy::DHCP::Subnet.new(match[0], netmask, options))
+          service.add_subnets(Proxy::DHCP::Subnet.new(match[0], match[1], options))
         end
       end
     end
@@ -98,32 +118,42 @@ module Proxy::DHCP::Infoblox
     end
 
     def unused_ip(network_address, mac_address, from_ip_address, to_ip_address)
-      # returns first available ip address in a subnet with network_address, for a host with mac_address, in the range of ip addresses: from_ip_address, to_ip_address
-      # Deliberatly ignoring everything but first argument
-      logger.debug "Infoblox unused_ip Network_address: #{network_address} #{mac_address}, #{from_ip_address}, #{to_ip_address}"
-      #next_available_ip can take a number to return (1), and an array of ips to exclude. So, we need to:
-      #build a list of all ips in the network (all_addresses)
-      #build a list of all ips in between from_ip_address and to_ip_address (include_addresses)
-      #remove all of the from_ip_address and to_ip_address from the all_address (exclude_addresses)
-      #and call next_available_ip with exclude_addresses passed
-      all_addresses = Array.new
-      net=IPAddr.new("#{network_address.network}/#{network_address.cidr}")
-      net.to_range.each do |ip|
-        all_addresses.push(ip.to_s)
+      # returns first available ip address in a network/range with network_address
+      logger.debug "Infoblox unused_ip Network_address: #{network_address}, #{mac_address}, #{from_ip_address}, #{to_ip_address}"
+      excluded_addresses = []
+      if !from_ip_address.nil? and !to_ip_address.nil? and !from_ip_address.empty? and !to_ip_address.empty?
+        #next_available_ip can take a number to return (1), and an array of ips to exclude. So, we need to:
+        #build a list of all ips in the network (all_addresses)
+        #build a list of all ips in between from_ip_address and to_ip_address (include_addresses)
+        #remove all of the from_ip_address and to_ip_address from the all_address (exclude_addresses)
+        #and call next_available_ip with exclude_addresses passed
+        all_addresses = Array.new
+        net=IPAddr.new("#{network_address.network}/#{network_address.cidr}")
+        net.to_range.each do |ip|
+          all_addresses.push(ip.to_s)
+        end
+        range_start=IPAddr.new(from_ip_address)
+        range_stop=IPAddr.new(to_ip_address)
+        included_addresses=Array.new
+        (range_start..range_stop).each do |ip|
+          included_addresses.push(ip.to_s)
+        end
+        excluded_addresses=all_addresses-included_addresses
+        #excluded_addresses is now an array of ips containing all the ips from the network not between from, and to_ip_address
       end
-      range_start=IPAddr.new(from_ip_address)
-      range_stop=IPAddr.new(to_ip_address)
-      included_addresses=Array.new
-      (range_start..range_stop).each do |ip|
-        included_addresses.push(ip.to_s)
-      end
-      excluded_addresses=all_addresses-included_addresses
-      #excluded_addresses is now an array of ips containing all the ips from the network not between from, and to_ip_address
 
       if @range
-        ::Infoblox::Range.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(1,excluded_addresses)
+        if excluded_addresses.empty?
+          ::Infoblox::Range.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(1)
+        else
+          ::Infoblox::Range.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(1,excluded_addresses)
+        end
       else
-        ::Infoblox::Network.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(1,excluded_addresses)
+        if excluded_addresses.empty?
+          ::Infoblox::Network.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(1)
+        else
+          ::Infoblox::Network.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(1,excluded_addresses)
+        end
       end
       # Idea for randomisation in case of concurrent installs:
       #::Infoblox::Network.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(15).sample
@@ -219,11 +249,14 @@ module Proxy::DHCP::Infoblox
         raise InvalidRecord, "#{record} IP mismatch" unless hostip.ipv4addr == record.ip
         # Send object
         host.put
-        record
       elsif @record_type == 'fixed_address'
         create_infoblox_fixed_address(record)
-        record
       end
+      if @restart
+        restart_services
+        sleep @restart_sleep if !@restart_sleep.nil?
+      end
+      record
     end
 
     def del_record subnet, record
@@ -233,24 +266,20 @@ module Proxy::DHCP::Infoblox
       # TODO: Refactor this into the base class
       raise InvalidRecord, "#{record} is static - unable to delete" unless record.deleteable?
       if @record_type == 'host'
-        # "Deleting" a record here means just disabling dhcp
+        # Delete whole host object that includes record.ip
         host = ::Infoblox::Host.find(@connection, 'ipv4addr' => record.ip)
         unless host.empty?
-          # if not empty, first element is what we want to edit
-          host = host.first
-          # Select correct ipv4addr object from ipv4addrs array
-          hostip = host.ipv4addrs.find { |ip| ip.ipv4addr == record.ip }
-          hostip.configure_for_dhcp = false
-          # Send object
-          host.put
+          # if not empty, first element is what we want to delete
+          host.first.delete
         end
       elsif @record_type == 'fixed_address'
         #Delete the fixed address record.
         fixed_address = ::Infoblox::Fixedaddress.find(@connection, 'ipv4addr' => record.ip).first
         fixed_address.delete
       end
+      restart_services if @restart
 
-      logger.debug "Disabled DHCP on #{record}"
+      logger.debug "Deleted #{@record_type} on #{record}"
     end
   end
 end
