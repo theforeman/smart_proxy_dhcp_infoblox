@@ -144,15 +144,15 @@ module Proxy::DHCP::Infoblox
 
       if @range
         if excluded_addresses.empty?
-          ::Infoblox::Range.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(1)
+          ::Infoblox::Range.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(1).first
         else
-          ::Infoblox::Range.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(1,excluded_addresses)
+          ::Infoblox::Range.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(1,excluded_addresses).first
         end
       else
         if excluded_addresses.empty?
-          ::Infoblox::Network.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(1)
+          ::Infoblox::Network.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(1).first
         else
-          ::Infoblox::Network.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(1,excluded_addresses)
+          ::Infoblox::Network.find(@connection, network: "#{network_address.network}/#{network_address.cidr}").first.next_available_ip(1,excluded_addresses).first
         end
       end
       # Idea for randomisation in case of concurrent installs:
