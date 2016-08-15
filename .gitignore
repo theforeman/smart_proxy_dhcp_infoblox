@@ -9,3 +9,4 @@ Gemfile.lock
 tags
 .bundle/
 vendor/
+config/*.yml

@@ -1,0 +1,17 @@
+---
+#
+# Configuration file for 'dhcp_infoblox' dhcp provider
+#
+# use :server setting in dhcp.yml if you are managing a dhcp server which is not localhost
+# use :subnets setting in dhcp.yml if you want to restrict subnets available to smart-proxy
+#
+:username: "infoblox"
+:password: "infoblox"
+#
+# Record type to manage: can be "host" or "fixed_address"
+#
+:record_type: 'host'
+#
+# Use  pre-definded ranges in networks to find available IP's
+#
+:use_ranges: false
