@@ -1,0 +1,60 @@
+require 'smart_proxy_dhcp_infoblox/common_crud'
+require 'smart_proxy_dhcp_infoblox/network_address_range_regex_generator'
+
+module ::Proxy::DHCP::Infoblox
+  class HostIpv4AddressCRUD < CommonCRUD
+    def initialize(connection)
+      @memoized_host = nil
+      @memoized_condition = nil
+      super
+    end
+
+    def all_hosts(subnet_address)
+      address_range_regex = NetworkAddressesRegularExpressionGenerator.new.generate_regex(subnet_address)
+
+      hosts = ::Infoblox::Host.find(
+          @connection,
+          'ipv4addr~' => address_range_regex,
+          '_max_results' => 2147483646)
+
+      ip_addr_matcher = Regexp.new(address_range_regex) # pre-compile the regex
+      hosts.map {|host| build_reservation(host.name, host.ipv4addrs.find {|ip| ip_addr_matcher =~ ip.ipv4addr}, subnet_address)}.compact
+    end
+
+    def find_record_by_ip(subnet_address, ip_address)
+      found = find_host('ipv4addr' => ip_address)
+      return nil if found.nil?
+      build_reservation(found.name, found.ipv4addrs.find {|ip| ip.ipv4addr == ip_address}, subnet_address)
+    end
+
+    def find_record_by_mac(subnet_address, mac_address)
+      found = find_host('mac' => mac_address)
+      return nil if found.nil?
+      build_reservation(found.name, found.ipv4addrs.find {|ip| ip.mac == mac_address}, subnet_address)
+    end
+
+    def find_host_and_name_by_ip(ip_address)
+      h = find_host('ipv4addr' => ip_address)
+      [h.name, h.ipv4addrs.find {|ip| ip.ipv4addr == ip_address}]
+    end
+
+    def find_host(condition)
+      return @memoized_host if (!@memoized_host.nil? && @memoized_condition == condition)
+      @memoized_condition = condition
+      @memoized_host = ::Infoblox::Host.find(@connection, condition.merge('_max_results' => 1)).first
+    end
+
+    def build_host(options)
+      host = ::Infoblox::Host.new(:connection => @connection)
+      host.name = options[:hostname]
+      host_addr = host.add_ipv4addr(options[:ip]).last
+      host_addr.mac = options[:mac]
+      host_addr.configure_for_dhcp = true
+      host_addr.nextserver = options[:nextServer]
+      host_addr.use_nextserver = true
+      host_addr.bootfile = options[:filename]
+      host_addr.use_bootfile = true
+      host
+    end
+  end
+end
