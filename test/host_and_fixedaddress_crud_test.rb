@@ -1,0 +1,169 @@
+require 'test_helper'
+require 'infoblox'
+require 'dhcp_common/dhcp_common'
+require 'dhcp_common/record/reservation'
+require 'smart_proxy_dhcp_infoblox/fixed_address_crud'
+require 'smart_proxy_dhcp_infoblox/host_ipv4_address_crud'
+
+module CommoncrudTests
+  def test_find_record_using_ip
+    @entity.expects(:find).with(@connection, 'ipv4addr' => '192.168.42.1', '_max_results' => 1).returns([@host])
+    assert_equal @reservation, @crud.find_record_by_ip('192.168.42.0/24', '192.168.42.1')
+  end
+
+  def test_find_record_using_ip_returns_nil_if_record_not_found
+    @entity.expects(:find).with(@connection, 'ipv4addr' => '192.168.42.1', '_max_results' => 1).returns([])
+    assert_nil @crud.find_record_by_ip('192.168.42.0/24', '192.168.42.1')
+  end
+
+  def test_find_record_using_mac
+    @entity.expects(:find).with(@connection, 'mac' => '00:01:02:03:05:06', '_max_results' => 1).returns([@host])
+    assert_equal @reservation, @crud.find_record_by_mac('192.168.42.0/24', '00:01:02:03:05:06')
+  end
+
+  def test_find_record_using_mac_returns_nil_if_record_not_found
+    @entity.expects(:find).with(@connection, 'mac' => '00:01:02:03:05:06', '_max_results' => 1).returns([])
+    assert_nil @crud.find_record_by_mac('192.168.42.0/24', '00:01:02:03:05:06')
+  end
+
+  def test_find_record_by_ip
+    @crud.expects(:find_record_by_ip).with('192.168.42.0/24', '192.168.42.1')
+    @crud.find_record('192.168.42.0/24', '192.168.42.1')
+  end
+
+  def test_find_record_by_mac
+    @crud.expects(:find_record_by_mac).with('192.168.42.0/24', '00:01:02:03:05:06')
+    @crud.find_record('192.168.42.0/24', '00:01:02:03:05:06')
+  end
+
+  def test_add_record
+    @crud.expects(:build_host).with(:ip => @ip, :mac => @mac, :hostname => @hostname).returns(@host)
+    @host.expects(:post)
+
+    @crud.add_record(:ip => @ip, :mac => @mac, :hostname => @hostname)
+  end
+
+  def test_add_record_with_already_existing_host
+    @crud.expects(:build_host).with(:ip => @ip, :mac => @mac, :hostname => @hostname).returns(@host)
+    @host.expects(:post).raises(Infoblox::Error.new("IB.Data.Conflict"))
+    @crud.expects(:find_host).with('ipv4addr' => @ip).returns(@host)
+
+    assert_raises(Proxy::DHCP::AlreadyExists) { @crud.add_record(:ip => @ip, :mac => @mac, :hostname => @hostname) }
+  end
+
+  def test_del_record
+    @crud.expects(:find_host).with('ipv4addr' => @ip).returns(@host)
+    @host.expects(:delete)
+    @crud.del_record('unused', @reservation)
+  end
+end
+
+class HostCrudTest < Test::Unit::TestCase
+  include CommoncrudTests
+
+  def setup
+    @connection = Object.new
+    @crud = ::Proxy::DHCP::Infoblox::HostIpv4AddressCRUD.new(@connection)
+
+    @entity = ::Infoblox::Host
+
+    @hostname = 'test.test.com'
+    @mac = '00:01:02:03:05:06'
+    @nextserver = '192.168.42.1'
+    @filename = '/tftpboot.img'
+    @ip = '192.168.42.1'
+
+    @host = ::Infoblox::Host.new(
+        :name => @hostname,
+        :ipv4addrs => [{:ipv4addr => @ip, :mac => @mac, :nextserver => @nextserver, :use_nextserver => true,
+                        :bootfile => @filename, :use_bootfile => true, :configure_for_dhcp => true}])
+
+    @reservation = ::Proxy::DHCP::Reservation.new(
+        :hostname => @hostname, :mac => @mac, :ip => @ip, :nextServer => @nextserver,
+        :filename => @filename, :deleteable => true,
+        :subnet => ::Proxy::DHCP::Subnet.new('192.168.42.0', '255.255.255.0'))
+  end
+
+  def test_all_hosts
+    ::Infoblox::Host.expects(:find).with(@connection, 'ipv4addr~' => '192\.168\.42\..+', '_max_results' => 2147483646).returns([@host])
+    assert_equal @reservation, @crud.all_hosts('192.168.42.0/24').first
+  end
+
+  def test_build_host
+    built = @crud.build_host(:hostname => @hostname, :mac => @mac, :ip => @ip, :nextServer => @nextserver,
+                             :filename => @filename, :deleteable => true)
+
+    assert_equal @host.name, built.name
+    assert_equal @host.ipv4addrs.size, built.ipv4addrs.size
+
+    expected_addr = @host.ipv4addrs.first
+    actual_addr = built.ipv4addrs.first
+
+    assert_equal expected_addr.ipv4addr, actual_addr.ipv4addr
+    assert_equal expected_addr.mac, actual_addr.mac
+    assert expected_addr.nextserver, actual_addr.nextserver
+    assert actual_addr.use_nextserver
+    assert_equal expected_addr.bootfile, actual_addr.bootfile
+    assert actual_addr.use_bootfile
+    assert actual_addr.configure_for_dhcp
+  end
+
+  def test_add_record_with_collision
+    @crud.expects(:build_host).with(:ip => @ip, :mac => @mac, :hostname => @hostname).returns(@host)
+    @host.expects(:post).raises(Infoblox::Error.new("IB.Data.Conflict"))
+    @crud.expects(:find_host).with('ipv4addr' => @ip).returns(
+        ::Infoblox::Host.new(:name => @hostname, :ipv4addrs => [{:ipv4addr => @ip, :mac => '11:22:33:44:55:66', :configure_for_dhcp => true}]))
+
+    assert_raises(Proxy::DHCP::Collision) { @crud.add_record(:ip => @ip, :mac => @mac, :hostname => @hostname) }
+  end
+end
+
+class FixedaddressCrudTest < Test::Unit::TestCase
+  def setup
+    @connection = Object.new
+    @crud = ::Proxy::DHCP::Infoblox::FixedAddressCRUD.new(@connection)
+
+    @entity = ::Infoblox::Fixedaddress
+
+    @hostname = 'test.test.com'
+    @mac = '00:01:02:03:05:06'
+    @nextserver = '192.168.42.1'
+    @filename = '/tftpboot.img'
+    @ip = '192.168.42.1'
+
+    @host = ::Infoblox::Fixedaddress.new(
+        :name => @hostname,
+        :ipv4addr => @ip, :mac => @mac) # :ipv4addr => @ip, :mac => @mac) #
+
+    @reservation = ::Proxy::DHCP::Reservation.new(
+        :hostname => @hostname, :mac => @mac, :ip => @ip, :deleteable => true,
+        :subnet => ::Proxy::DHCP::Subnet.new('192.168.42.0', '255.255.255.0'))
+  end
+
+  def test_all_hosts
+    ::Infoblox::Fixedaddress.expects(:find).with(@connection, 'network' => '192.168.42.0/24', '_max_results' => 2147483646).returns([@host])
+    assert_equal @reservation, @crud.all_hosts('192.168.42.0/24').first
+  end
+
+  def test_build_host
+    built = @crud.build_host(:hostname => @hostname, :mac => @mac, :ip => @ip, :nextServer => @nextserver,
+                             :filename => @filename, :deleteable => true)
+
+    assert_equal @host.name, built.name
+    assert_equal @host.ipv4addr, built.ipv4addr
+    assert_equal @host.mac, built.mac
+#    assert @host.nextserver, built.nextserver
+#    assert built.use_nextserver
+#    assert_equal @host.bootfile, built.bootfile
+#    assert built.use_bootfile
+  end
+
+  def test_add_record_with_collision
+    @crud.expects(:build_host).with(:ip => @ip, :mac => @mac, :hostname => @hostname).returns(@host)
+    @host.expects(:post).raises(Infoblox::Error.new("IB.Data.Conflict"))
+    @crud.expects(:find_host).with('ipv4addr' => @ip).returns(
+        ::Infoblox::Fixedaddress.new(:name => @hostname, :ipv4addr => @ip, :mac => '11:22:33:44:55:66'))
+
+    assert_raises(Proxy::DHCP::Collision) { @crud.add_record(:ip => @ip, :mac => @mac, :hostname => @hostname) }
+  end
+end
