@@ -24,7 +24,7 @@ To enable this DHCP provider, edit `/etc/foreman-proxy/settings.d/dhcp.yml` and 
 Configuration options for this plugin are in `/etc/foreman-proxy/settings.d/dhcp_infoblox.yml` and include:
 
 * username: API Username
-* passowrd: API Password
+* password: API Password
 * record_type: host / fixedaddress (see different record types chapter)
 * use_range: use infoblox ranges (true) or infoblox networks (false) to find the next free ip in your infoblox
 
