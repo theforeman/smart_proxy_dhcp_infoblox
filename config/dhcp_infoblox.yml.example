@@ -8,7 +8,7 @@
 :username: "infoblox"
 :password: "infoblox"
 #
-# Record type to manage: can be "host" or "fixed_address"
+# Record type to manage: can be "host" or "fixedaddress"
 #
 :record_type: 'host'
 #
