@@ -48,9 +48,23 @@ module ::Proxy::DHCP::Infoblox
 
     def del_record(_, record)
       raise InvalidRecord, "#{record} is static - unable to delete" unless record.deleteable?
-      found = find_host('ipv4addr' => record.ip)
+      found = find_hosts('ipv4addr' => record.ip).first
       return if found.nil?
       found.delete
+    end
+
+    def del_records_by_ip(ip_address)
+      found = find_hosts({'ipv4addr' => ip_address}, 2147483646)
+      return if found.empty?
+      found.each {|record| record.delete}
+      nil
+    end
+
+    def del_record_by_mac(mac_address)
+      found = find_hosts('mac' => mac_address).first
+      return if found.nil?
+      found.delete
+      nil
     end
 
     def build_reservation(name, host, full_subnet_address)

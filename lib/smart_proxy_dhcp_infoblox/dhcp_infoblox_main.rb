@@ -41,6 +41,14 @@ module Proxy::DHCP::Infoblox
       crud.find_record(full_network_address(subnet_address), an_address)
     end
 
+    def find_record_by_mac(subnet_address, mac_address)
+      crud.find_record_by_mac(full_network_address(subnet_address), mac_address)
+    end
+
+    def find_records_by_ip(subnet_address, ip_address)
+      crud.find_records_by_ip(full_network_address(subnet_address), ip_address)
+    end
+
     def add_record(options)
       crud.add_record(options)
       logger.debug("Added DHCP reservation for #{options[:ip]}/#{options[:mac]}")
@@ -50,6 +58,18 @@ module Proxy::DHCP::Infoblox
     def del_record(subnet, record)
       crud.del_record(full_network_address(subnet.network), record)
       logger.debug("Removed DHCP reservation for #{record.ip} => #{record}")
+      restart_grid.try_restart
+    end
+
+    def del_record_by_mac(_, mac_address)
+      crud.del_record_by_mac(mac_address)
+      logger.debug("Removed DHCP reservation for #{mac_address}")
+      restart_grid.try_restart
+    end
+
+    def del_records_by_ip(_, ip_address)
+      crud.del_records_by_ip(ip_address)
+      logger.debug("Removed DHCP reservation(s) for #{ip_address}")
       restart_grid.try_restart
     end
 

@@ -3,7 +3,7 @@ require 'smart_proxy_dhcp_infoblox/common_crud'
 module ::Proxy::DHCP::Infoblox
   class FixedAddressCRUD < CommonCRUD
     def initialize(connection)
-      @memoized_host = nil
+      @memoized_hosts = []
       @memoized_condition = nil
       super
     end
@@ -14,26 +14,32 @@ module ::Proxy::DHCP::Infoblox
     end
 
     def find_record_by_ip(subnet_address, ip_address)
-      found = find_host('ipv4addr' => ip_address)
+      found = find_hosts('ipv4addr' => ip_address).first
       return nil if found.nil?
       build_reservation(found.name, found, subnet_address)
+    end
+
+    def find_records_by_ip(subnet_address, ip_address)
+      found = find_hosts({'ipv4addr' => ip_address}, 2147483646)
+      return [] if found.empty?
+      found.map {|record| build_reservation(record.name, record, subnet_address)}
     end
 
     def find_record_by_mac(subnet_address, mac_address)
-      found = find_host('mac' => mac_address)
+      found = find_hosts('mac' => mac_address).first
       return nil if found.nil?
       build_reservation(found.name, found, subnet_address)
     end
 
-    def find_host(condition)
-      return @memoized_host if (!@memoized_host.nil? && @memoized_condition == condition)
+    def find_hosts(condition, max_results = 1)
+      return @memoized_hosts if (!@memoized_host.empty? && @memoized_condition == condition)
       @memoized_condition = condition
-      @memoized_host = ::Infoblox::Fixedaddress.find(@connection, condition.merge('_max_results' => 1)).first
+      @memoized_hosts = ::Infoblox::Fixedaddress.find(@connection, condition.merge('_max_results' => max_results))
     end
 
     def find_host_and_name_by_ip(ip_address)
-      h = find_host('ipv4addr' => ip_address)
-      [h.name, h]
+      h = find_hosts('ipv4addr' => ip_address).first
+      h.nil? ? [nil, nil] : [h.name, h]
     end
 
     def build_host(options)

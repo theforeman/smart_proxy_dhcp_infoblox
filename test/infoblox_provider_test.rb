@@ -58,4 +58,16 @@ class InfobloxProviderTest < Test::Unit::TestCase
                                                    :mac => '00:01:02:03:04:05',
                                                    :subnet => ::Proxy::DHCP::Subnet.new('192.168.42.0', '255.255.255.0')))
   end
+
+  def test_del_record_by_mac_restarts_grid
+    @crud.stubs(:del_record_by_mac)
+    @restart_grid.expects(:try_restart)
+    @provider.del_record_by_mac(@subnet.network, '00:01:02:03:04:05')
+  end
+
+  def test_del_record_by_ip_restarts_grid
+    @crud.stubs(:del_records_by_ip)
+    @restart_grid.expects(:try_restart)
+    @provider.del_records_by_ip(@subnet.network, '192.168.42.1')
+  end
 end
