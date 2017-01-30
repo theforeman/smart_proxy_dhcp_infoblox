@@ -101,10 +101,9 @@ class HostCrudTest < Test::Unit::TestCase
         :ipv4addrs => [{:ipv4addr => @ip, :mac => '00:01:02:03:05:07', :nextserver => @nextserver, :use_nextserver => true,
                         :bootfile => @filename, :use_bootfile => true, :configure_for_dhcp => true}])
 
-    @reservation = ::Proxy::DHCP::Reservation.new(
-        :hostname => @hostname, :mac => @mac, :ip => @ip, :nextServer => @nextserver,
-        :filename => @filename, :deleteable => true,
-        :subnet => ::Proxy::DHCP::Subnet.new(@subnet_ip, '255.255.255.0'))
+    @reservation = ::Proxy::DHCP::Reservation.new(@hostname, @ip, @mac, ::Proxy::DHCP::Subnet.new(@subnet_ip, '255.255.255.0'),
+                                                  :hostname => @hostname, :nextServer => @nextserver, :filename => @filename,
+                                                  :deleteable => true)
   end
 
   def test_all_hosts
@@ -162,9 +161,8 @@ class FixedaddressCrudTest < Test::Unit::TestCase
         :name => 'another.test.com',
         :ipv4addr => @ip, :mac => '00:01:02:03:05:07')
 
-    @reservation = ::Proxy::DHCP::Reservation.new(
-        :hostname => @hostname, :mac => @mac, :ip => @ip, :deleteable => true,
-        :subnet => ::Proxy::DHCP::Subnet.new(@subnet_ip, '255.255.255.0'))
+    @reservation = ::Proxy::DHCP::Reservation.new(@hostname, @ip, @mac, ::Proxy::DHCP::Subnet.new(@subnet_ip, '255.255.255.0'),
+                                                  :deleteable => true, :hostname => @hostname)
   end
 
   def test_all_hosts
