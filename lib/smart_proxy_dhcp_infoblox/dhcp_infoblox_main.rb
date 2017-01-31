@@ -18,8 +18,6 @@ module Proxy::DHCP::Infoblox
     end
 
     def find_subnet(address);::Proxy::DHCP::Subnet.new(address, '255.255.255.0'); end
-    def load_subnets; end
-    def load_subnet_data(_); end
 
     def subnets
       ::Infoblox::Network.all(connection).map do |network|
