@@ -1,5 +1,6 @@
 require 'resolv'
 require 'smart_proxy_dhcp_infoblox/ip_address_arithmetic'
+require 'smart_proxy_dhcp_infoblox/network_address_range_regex_generator'
 require "proxy/validations"
 
 module ::Proxy::DHCP::Infoblox
@@ -13,8 +14,20 @@ module ::Proxy::DHCP::Infoblox
       @connection = connection
     end
 
-    def all_leases(network_address)
-      [] # infoblox doesn't support leases
+    def all_leases(network_address, subnet)
+      address_range_regex = NetworkAddressesRegularExpressionGenerator.new.generate_regex(network_address)
+      ::Infoblox::Lease.find(@connection, 'address~' => address_range_regex).map do |lease|
+        Proxy::DHCP::Lease.new(
+          lease.client_hostname,
+          lease.address,
+          lease.hardware,
+          subnet,
+          lease.starts,
+          lease.ends,
+          lease.binding_state,
+          :hostname => lease.client_hostname
+        )
+      end
     end
 
     def find_record(subnet_address, an_address)

@@ -32,7 +32,7 @@ module Proxy::DHCP::Infoblox
     end
 
     def all_leases(network_address)
-      crud.all_leases(full_network_address(network_address))
+      crud.all_leases(full_network_address(network_address), find_subnet(network_address))
     end
 
     def find_record(subnet_address, an_address)
