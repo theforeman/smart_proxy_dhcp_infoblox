@@ -16,9 +16,49 @@ class InfobloxProviderTest < Test::Unit::TestCase
     @network = Infoblox::Network.new(:network => '192.168.42.0/24')
     @subnet = ::Proxy::DHCP::Subnet.new('192.168.42.0', '255.255.255.0')
 
-    @network_2 = Infoblox::Network.new(:network => '192.168.43.0/24')
+    @network_2 = Infoblox::Network.new(:network => '192.168.32.0/19')
+    @subnet_2 = ::Proxy::DHCP::Subnet.new('192.168.32.0', '255.255.224.0')
+
+    @network_3 = Infoblox::Network.new(:network => '192.168.43.0/24')
+
     @provider = Proxy::DHCP::Infoblox::Provider.new(@connection, @crud, @restart_grid,
                                                     @unused_ips, @managed_subnets, @network_view)
+
+    @lease = Infoblox::Lease.new(:address => '192.168.43.127',
+                                 :binding_state => 'active',
+                                 :client_hostname => 'example',
+                                 :hardware => 'ba:be:fa:ce:ca:fe',
+                                 :network => @subnet.network,
+                                 :starts => nil,
+                                 :ends => nil)
+
+    @lease_2 = Infoblox::Lease.new(:address => '192.168.60.121',
+                                   :binding_state => 'active',
+                                   :client_hostname => 'example',
+                                   :hardware => 'c0:fe:fe:f0:01:bb',
+                                   :network => @subnet_2.network,
+                                   :starts => nil,
+                                   :ends => nil)
+  end
+
+  def test_leases
+    @crud = ::Proxy::DHCP::Infoblox::CommonCRUD.new(@connection)
+    @provider = Proxy::DHCP::Infoblox::Provider.new(@connection, @crud, @restart_grid,
+                                                    @unused_ips, @managed_subnets, @network_view)
+
+    @provider.expects(:full_network_address).with(@subnet.network).returns(@network.network)
+    Infoblox::Lease.expects(:find).with(@connection, 'address~' => "192\\.168\\.42\\..+").returns([@lease])
+    assert_equal @lease.hardware, @provider.all_leases(@subnet.network).first.mac
+  end
+
+  def test_nonclass_leases
+    @crud = ::Proxy::DHCP::Infoblox::CommonCRUD.new(@connection)
+    @provider = Proxy::DHCP::Infoblox::Provider.new(@connection, @crud, @restart_grid,
+                                                    @unused_ips, @managed_subnets, @network_view)
+
+    @provider.expects(:full_network_address).with(@subnet_2.network).returns(@network_2.network)
+    Infoblox::Lease.expects(:find).with(@connection, 'address~' => "192\\.168\\.(0?3[3456789]|0?[45][0123456789]|0?6[012])\\..+").returns([@lease_2])
+    assert_equal @lease_2.hardware, @provider.all_leases(@subnet_2.network).first.mac
   end
 
   def test_subnets
@@ -29,7 +69,7 @@ class InfobloxProviderTest < Test::Unit::TestCase
   def test_subnets_returns_managed_subnets_only
     provider = Proxy::DHCP::Infoblox::Provider.new(@connection, @crud, @restart_grid,
                                                    @unused_ips, ['192.168.42.0/255.255.255.0'], @network_view)
-    Infoblox::Network.expects(:all).with(@connection).returns([@network, @network_2])
+    Infoblox::Network.expects(:all).with(@connection).returns([@network, @network_3])
     assert_equal [@subnet], provider.subnets
   end
 
