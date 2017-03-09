@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 gemspec
 
-gem 'infoblox', '>= 0.4.1'
+gem 'infoblox', '>= 2.0.4'
 if RUBY_VERSION < '2.0.0'
   gem 'json', '< 2.0.0', :require => false
 end

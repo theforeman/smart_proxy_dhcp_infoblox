@@ -177,10 +177,10 @@ class FixedaddressCrudTest < Test::Unit::TestCase
     assert_equal @host.name, built.name
     assert_equal @host.ipv4addr, built.ipv4addr
     assert_equal @host.mac, built.mac
-#    assert @host.nextserver, built.nextserver
-#    assert built.use_nextserver
-#    assert_equal @host.bootfile, built.bootfile
-#    assert built.use_bootfile
+    assert_equal @nextserver, built.nextserver
+    assert built.use_nextserver
+    assert_equal @filename, built.bootfile
+    assert built.use_bootfile
   end
 
   def test_add_record_with_collision
