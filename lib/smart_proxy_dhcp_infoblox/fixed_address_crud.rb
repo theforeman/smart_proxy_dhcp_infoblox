@@ -47,12 +47,10 @@ module ::Proxy::DHCP::Infoblox
       host.name = options[:hostname]
       host.ipv4addr = options[:ip]
       host.mac = options[:mac]
-      # TODO: nextserver, use_nextserver, bootfile, and use_bootfile attrs exist but are not available in the model
-      # Might be useful to extend the model to include these
-      #host.nextserver = options[:nextServer]
-      #host.use_nextserver = true
-      #host.bootfile = options[:filename]
-      #host.use_bootfile = true
+      host.nextserver = options[:nextServer]
+      host.use_nextserver = true
+      host.bootfile = options[:filename]
+      host.use_bootfile = true
       host
     end
   end
