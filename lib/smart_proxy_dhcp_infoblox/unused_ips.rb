@@ -9,6 +9,7 @@ module Proxy::DHCP::Infoblox
     def initialize(connection, use_ranges)
       @connection = connection
       @use_ranges = use_ranges
+      @memoized_network = nil
     end
 
     def unused_ip(network_address, from_ip_address, to_ip_address)
