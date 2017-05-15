@@ -53,8 +53,8 @@ module Proxy::DHCP::Infoblox
       restart_grid.try_restart
     end
 
-    def del_record(subnet, record)
-      crud.del_record(full_network_address(subnet.network), record)
+    def del_record(record)
+      crud.del_record(full_network_address(record.subnet_address), record)
       logger.debug("Removed DHCP reservation for #{record.ip} => #{record}")
       restart_grid.try_restart
     end
@@ -72,7 +72,7 @@ module Proxy::DHCP::Infoblox
     end
 
     def unused_ip(subnet, _, from_ip_address, to_ip_address)
-      unused_ips.unused_ip(subnet.network, from_ip_address, to_ip_address)
+      unused_ips.unused_ip(subnet, from_ip_address, to_ip_address)
     end
 
     def find_network(network_address)
