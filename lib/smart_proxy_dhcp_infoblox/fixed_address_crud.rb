@@ -32,7 +32,7 @@ module ::Proxy::DHCP::Infoblox
     end
 
     def find_hosts(condition, max_results = 1)
-      return @memoized_hosts if (!@memoized_host.empty? && @memoized_condition == condition)
+      return @memoized_hosts if (!@memoized_hosts.empty? && @memoized_condition == condition)
       @memoized_condition = condition
       @memoized_hosts = ::Infoblox::Fixedaddress.find(@connection, condition.merge('_max_results' => max_results))
     end
