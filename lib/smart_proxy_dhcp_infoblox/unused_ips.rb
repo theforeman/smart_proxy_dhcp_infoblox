@@ -31,7 +31,7 @@ module Proxy::DHCP::Infoblox
     end
 
     def find_range(network_address, from, to)
-      ranges = ::Infoblox::Range.find(@connection, 'network~' => network_address)
+      ranges = ::Infoblox::Range.find(@connection, 'network' => network_address)
       range = (from.nil? || to.nil?) ? ranges.first : ranges.find {|r| r.start_addr == from && r.end_addr == to}
       raise "No Ranges found for #{network_address} network" if range.nil?
       range
@@ -40,7 +40,7 @@ module Proxy::DHCP::Infoblox
     def find_network(network_address)
       return @memoized_network if !@memoized_network.nil? && @memoized_address == network_address
       @memoized_address = network_address
-      @memoized_network = ::Infoblox::Network.find(@connection, 'network~' => network_address, '_max_results' => 1).first
+      @memoized_network = ::Infoblox::Network.find(@connection, 'network' => network_address, '_max_results' => 1).first
       raise "Subnet #{network_address} not found" if @memoized_network.nil?
       @memoized_network
     end

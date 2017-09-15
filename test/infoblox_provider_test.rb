@@ -32,12 +32,12 @@ class InfobloxProviderTest < Test::Unit::TestCase
   end
 
   def test_find_subnet
-    ::Infoblox::Network.expects(:find).with(@connection, 'network~' => '192.168.42.0', '_max_results' => 1).returns([@network])
+    ::Infoblox::Network.expects(:find).with(@connection, 'network' => '192.168.42.0', '_max_results' => 1).returns([@network])
     assert_equal @network, @provider.find_network('192.168.42.0')
   end
 
   def test_find_subnet_raises_exception_when_network_not_found
-    ::Infoblox::Network.expects(:find).with(@connection, 'network~' => '192.168.42.0', '_max_results' => 1).returns([])
+    ::Infoblox::Network.expects(:find).with(@connection, 'network' => '192.168.42.0', '_max_results' => 1).returns([])
     assert_raises(RuntimeError) { @provider.find_network('192.168.42.0') }
   end
 

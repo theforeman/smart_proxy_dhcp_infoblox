@@ -76,7 +76,7 @@ module Proxy::DHCP::Infoblox
     end
 
     def find_network(network_address)
-      network = ::Infoblox::Network.find(connection, 'network~' => network_address, '_max_results' => 1).first
+      network = ::Infoblox::Network.find(connection, 'network' => network_address, '_max_results' => 1).first
       raise "Subnet #{network_address} not found" if network.nil?
       network
     end
