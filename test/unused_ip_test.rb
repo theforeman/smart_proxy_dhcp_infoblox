@@ -23,13 +23,13 @@ class UnusedIpTest < Test::Unit::TestCase
   end
 
   def test_unused_network_ip
-    ::Infoblox::Network.expects(:find).with(@connection, 'network~' => '1.1.1.0', '_max_results' => 1).returns([@network])
+    ::Infoblox::Network.expects(:find).with(@connection, 'network' => '1.1.1.0', '_max_results' => 1).returns([@network])
     @network.expects(:next_available_ip).with(1, ['1.1.1.254', '1.1.1.255']).returns(['1.1.1.1'])
     assert_equal '1.1.1.1', @unused_ips.unused_network_ip('1.1.1.0', '1.1.1.0', '1.1.1.253')
   end
 
   def test_unused_range_ip
-    ::Infoblox::Range.expects(:find).with(@connection, 'network~' => '1.1.1.0').returns([@range])
+    ::Infoblox::Range.expects(:find).with(@connection, 'network' => '1.1.1.0').returns([@range])
     @range.expects(:next_available_ip).with(1).returns(['1.1.1.1'])
     assert_equal '1.1.1.1', @unused_ips.unused_range_ip('1.1.1.0', '1.1.1.0', '1.1.1.253')
   end
