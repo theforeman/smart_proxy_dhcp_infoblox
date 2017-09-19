@@ -12,14 +12,18 @@ require 'smart_proxy_dhcp_infoblox/dhcp_infoblox_main'
 
 class PluginDefaultConfigurationTest < Test::Unit::TestCase
   def test_default_settings
-    assert_equal({:record_type => 'host', :range => false}, Proxy::DHCP::Infoblox::Plugin.default_settings)
+    assert_equal({:record_type => 'host', :range => false, :dns_view => "default", :network_view => "default"},
+                 Proxy::DHCP::Infoblox::Plugin.default_settings)
   end
 end
 
 class InfobloxDhcpProductionWiringTest < Test::Unit::TestCase
   def setup
+    @network_view = "network_view"
+    @dns_view = "dns_view"
     @settings = {:username => 'user', :password => 'password', :server => '127.0.0.1', :record_type => 'host',
-                 :use_ranges => true, :subnets => ['1.1.1.0/255.255.255.0']}
+                 :use_ranges => true, :subnets => ['1.1.1.0/255.255.255.0'],
+                 :dns_view => @dns_view, :network_view => @network_view}
     @container = ::Proxy::DependencyInjection::Container.new
     Proxy::DHCP::Infoblox::PluginConfiguration.new.load_dependency_injection_wirings(@container, @settings)
   end
@@ -36,16 +40,19 @@ class InfobloxDhcpProductionWiringTest < Test::Unit::TestCase
     free_ips = @container.get_dependency(:unused_ips)
     assert_not_nil free_ips.connection
     assert free_ips.use_ranges
+    assert_equal @network_view, free_ips.network_view
   end
 
   def test_host_ipv4_crud_configuration
     host = @container.get_dependency(:host_ipv4_crud)
     assert_not_nil host.connection
+    assert_equal @dns_view, host.dns_view
   end
 
   def test_fixed_address_crud_configuration
     fixed_address = @container.get_dependency(:fixed_address_crud)
     assert_not_nil fixed_address.connection
+    assert_equal @network_view, fixed_address.network_view
   end
 
   def test_grid_restart_configuration
@@ -58,6 +65,7 @@ class InfobloxDhcpProductionWiringTest < Test::Unit::TestCase
     assert_not_nil provider.connection
     assert_not_nil provider.restart_grid
     assert_not_nil provider.unused_ips
+    assert_equal @network_view, provider.network_view
     assert provider.managed_subnets.include?('1.1.1.0/255.255.255.0')
     assert provider.crud.instance_of?(::Proxy::DHCP::Infoblox::HostIpv4AddressCRUD)
   end

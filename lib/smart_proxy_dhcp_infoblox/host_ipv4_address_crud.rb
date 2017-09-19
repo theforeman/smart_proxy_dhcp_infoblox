@@ -3,10 +3,13 @@ require 'smart_proxy_dhcp_infoblox/network_address_range_regex_generator'
 
 module ::Proxy::DHCP::Infoblox
   class HostIpv4AddressCRUD < CommonCRUD
-    def initialize(connection)
+    attr_reader :dns_view
+
+    def initialize(connection, dns_view)
       @memoized_hosts = []
       @memoized_condition = nil
-      super
+      @dns_view = dns_view
+      super(connection)
     end
 
     def all_hosts(subnet_address)
@@ -15,6 +18,7 @@ module ::Proxy::DHCP::Infoblox
       hosts = ::Infoblox::Host.find(
           @connection,
           'ipv4addr~' => address_range_regex,
+          'view' => dns_view,
           '_max_results' => 2147483646)
 
       ip_addr_matcher = Regexp.new(address_range_regex) # pre-compile the regex
@@ -47,7 +51,8 @@ module ::Proxy::DHCP::Infoblox
     def find_hosts(condition, max_results = 1)
       return @memoized_hosts if (!@memoized_hosts.empty? && @memoized_condition == condition)
       @memoized_condition = condition
-      @memoized_hosts = ::Infoblox::Host.find(@connection, condition.merge('_max_results' => max_results))
+      @memoized_hosts = ::Infoblox::Host.find(@connection, condition.merge('view' => dns_view,
+                                                                           '_max_results' => max_results))
     end
 
     def build_host(options)
@@ -60,6 +65,7 @@ module ::Proxy::DHCP::Infoblox
       host_addr.use_nextserver = true
       host_addr.bootfile = options[:filename]
       host_addr.use_bootfile = true
+      host.view = dns_view
       host
     end
   end
