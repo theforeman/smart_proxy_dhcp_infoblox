@@ -7,13 +7,14 @@ module Proxy::DHCP::Infoblox
     include Proxy::Util
     include IpAddressArithmetic
 
-    attr_reader :connection, :crud, :restart_grid, :unused_ips
+    attr_reader :connection, :crud, :restart_grid, :unused_ips, :network_view
 
-    def initialize(connection, crud, restart_grid, unused_ips, managed_subnets)
+    def initialize(connection, crud, restart_grid, unused_ips, managed_subnets, network_view)
       @connection = connection
       @crud = crud
       @restart_grid = restart_grid
       @unused_ips = unused_ips
+      @network_view = network_view
       super('infoblox', managed_subnets, nil)
     end
 
@@ -76,7 +77,8 @@ module Proxy::DHCP::Infoblox
     end
 
     def find_network(network_address)
-      network = ::Infoblox::Network.find(connection, 'network' => network_address, '_max_results' => 1).first
+      network = ::Infoblox::Network.find(connection, 'network' => network_address, 'network_view' => network_view,
+                                         '_max_results' => 1).first
       raise "Subnet #{network_address} not found" if network.nil?
       network
     end

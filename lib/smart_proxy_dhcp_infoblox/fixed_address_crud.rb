@@ -2,14 +2,18 @@ require 'smart_proxy_dhcp_infoblox/common_crud'
 
 module ::Proxy::DHCP::Infoblox
   class FixedAddressCRUD < CommonCRUD
-    def initialize(connection)
+    attr_reader :network_view
+
+    def initialize(connection, network_view)
       @memoized_hosts = []
       @memoized_condition = nil
-      super
+      @network_view = network_view
+      super(connection)
     end
 
     def all_hosts(subnet_address)
-      network = ::Infoblox::Fixedaddress.find(@connection, 'network' => subnet_address, '_max_results' => 2147483646) #2**(32-cidr_to_i(subnet_address)))
+      network = ::Infoblox::Fixedaddress.find(@connection, 'network' => subnet_address, 'network_view' => network_view,
+                                              '_max_results' => 2147483646) #2**(32-cidr_to_i(subnet_address)))
       network.map {|h| build_reservation(h.name, h, subnet_address)}.compact
     end
 
@@ -32,9 +36,10 @@ module ::Proxy::DHCP::Infoblox
     end
 
     def find_hosts(condition, max_results = 1)
-      return @memoized_hosts if (!@memoized_hosts.empty? && @memoized_condition == condition)
+      return @memoized_hosts if (!@memoized_hosts.empty? && @memoized_condition = condition)
       @memoized_condition = condition
-      @memoized_hosts = ::Infoblox::Fixedaddress.find(@connection, condition.merge('_max_results' => max_results))
+      @memoized_hosts = ::Infoblox::Fixedaddress.find(@connection, condition.merge('_max_results' => max_results,
+                                                                                   'network_view' => network_view))
     end
 
     def find_host_and_name_by_ip(ip_address)
@@ -51,6 +56,7 @@ module ::Proxy::DHCP::Infoblox
       host.use_nextserver = true
       host.bootfile = options[:filename]
       host.use_bootfile = true
+      host.network_view = network_view
       host
     end
   end

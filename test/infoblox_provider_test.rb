@@ -11,13 +11,15 @@ class InfobloxProviderTest < Test::Unit::TestCase
     @restart_grid = Object.new
     @unused_ips = Object.new
     @managed_subnets = nil
+    @network_view = "another"
 
     @network = Infoblox::Network.new(:network => '192.168.42.0/24')
     @subnet = ::Proxy::DHCP::Subnet.new('192.168.42.0', '255.255.255.0')
 
 
     @network_2 = Infoblox::Network.new(:network => '192.168.43.0/24')
-    @provider = Proxy::DHCP::Infoblox::Provider.new(@connection, @crud, @restart_grid, @unused_ips, @managed_subnets)
+    @provider = Proxy::DHCP::Infoblox::Provider.new(@connection, @crud, @restart_grid,
+                                                    @unused_ips, @managed_subnets, @network_view)
   end
 
   def test_subnets
@@ -26,18 +28,21 @@ class InfobloxProviderTest < Test::Unit::TestCase
   end
 
   def test_subnets_returns_managed_subnets_only
-    provider = Proxy::DHCP::Infoblox::Provider.new(@connection, @crud, @restart_grid, @unused_ips, ['192.168.42.0/255.255.255.0'])
+    provider = Proxy::DHCP::Infoblox::Provider.new(@connection, @crud, @restart_grid,
+                                                   @unused_ips, ['192.168.42.0/255.255.255.0'], @network_view)
     Infoblox::Network.expects(:all).with(@connection).returns([@network, @network_2])
     assert_equal [@subnet], provider.subnets
   end
 
   def test_find_subnet
-    ::Infoblox::Network.expects(:find).with(@connection, 'network' => '192.168.42.0', '_max_results' => 1).returns([@network])
+    ::Infoblox::Network.expects(:find).with(@connection, 'network' => '192.168.42.0',
+                                            '_max_results' => 1, 'network_view' => @network_view).returns([@network])
     assert_equal @network, @provider.find_network('192.168.42.0')
   end
 
   def test_find_subnet_raises_exception_when_network_not_found
-    ::Infoblox::Network.expects(:find).with(@connection, 'network' => '192.168.42.0', '_max_results' => 1).returns([])
+    ::Infoblox::Network.expects(:find).with(@connection, 'network' => '192.168.42.0',
+                                            'network_view' => @network_view, '_max_results' => 1).returns([])
     assert_raises(RuntimeError) { @provider.find_network('192.168.42.0') }
   end
 
