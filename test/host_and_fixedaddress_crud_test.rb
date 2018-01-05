@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'ostruct'
 require 'infoblox'
 require 'dhcp_common/dhcp_common'
 require 'dhcp_common/record/reservation'
@@ -18,6 +19,16 @@ module CommoncrudTests
 
   def test_find_records_using_ip_returns_empty_arrays_if_records_not_found
     @entity.expects(:find).with(@connection, search_condition('ipv4addr' => '192.168.42.1', '_max_results' => 2147483646)).returns([])
+    assert @crud.find_records_by_ip('192.168.42.0/24', '192.168.42.1').empty?
+  end
+
+  def test_find_records_by_ip_returns_empty_array_when_host_has_no_dhcp_record
+    found_record = OpenStruct.new(:name => 'testing',
+                                  :ipv4addrs => [OpenStruct.new(:ipv4addr => '192.168.42.1',
+                                                                :mac => '00:01:02:03:04:05',
+                                                                :configure_for_dhcp => false)])
+    @entity.expects(:find).
+        with(@connection, search_condition('ipv4addr' => '192.168.42.1', '_max_results' => 2147483646)).returns([found_record])
     assert @crud.find_records_by_ip('192.168.42.0/24', '192.168.42.1').empty?
   end
 
@@ -150,6 +161,8 @@ class HostCrudTest < Test::Unit::TestCase
 end
 
 class FixedaddressCrudTest < Test::Unit::TestCase
+  include CommoncrudTests
+
   def setup
     @connection = Object.new
     @network_view = "something"

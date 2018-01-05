@@ -26,7 +26,8 @@ module ::Proxy::DHCP::Infoblox
     def find_records_by_ip(subnet_address, ip_address)
       found = find_hosts({'ipv4addr' => ip_address}, 2147483646)
       return [] if found.empty?
-      found.map {|record| build_reservation(record.name, record, subnet_address)}
+      to_return = found.map {|record| build_reservation(record.name, record, subnet_address)}
+      to_return.compact
     end
 
     def find_record_by_mac(subnet_address, mac_address)
