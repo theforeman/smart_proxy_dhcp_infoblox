@@ -1,5 +1,7 @@
 # SmartProxyDhcpInfoblox
 
+[![Build Status](https://travis-ci.org/theforeman/smart_proxy_dhcp_infoblox.svg?branch=master)](https://travis-ci.org/theforeman/smart_proxy_dhcp_infoblox)
+
 This plugin adds a new DHCP provider for managing records with infoblox servers
 
 ## Installation
