@@ -7,15 +7,14 @@ module Proxy::DHCP::Infoblox
     include Proxy::Util
     include IpAddressArithmetic
 
-    attr_reader :connection, :crud, :restart_grid, :unused_ips, :network_view
+    attr_reader :connection, :crud, :restart_grid, :network_view
 
     def initialize(connection, crud, restart_grid, unused_ips, managed_subnets, network_view)
       @connection = connection
       @crud = crud
       @restart_grid = restart_grid
-      @unused_ips = unused_ips
       @network_view = network_view
-      super('infoblox', managed_subnets, nil)
+      super('infoblox', managed_subnets, nil, unused_ips)
     end
 
     def find_subnet(address);::Proxy::DHCP::Subnet.new(address, '255.255.255.0'); end
@@ -72,8 +71,21 @@ module Proxy::DHCP::Infoblox
       restart_grid.try_restart
     end
 
-    def unused_ip(subnet, _, from_ip_address, to_ip_address)
-      unused_ips.unused_ip(subnet, from_ip_address, to_ip_address)
+    require 'dhcp_common/subnet'
+    def get_subnet(subnet_address)
+      address, prefix_length = full_network_address(subnet_address).split("/")
+      netmask = cidr_to_ip_mask(prefix_length.to_i)
+    end
+
+    def find_ip_by_mac_address_and_range(subnet, mac_address, from_address, to_address)
+      r = crud.find_record_by_mac("#{subnet.network}/#{subnet.cidr}", mac_address)
+
+      if r && (IPAddr.new(from_address)..IPAddr.new(to_address)).cover?(IPAddr.new(r.ip))
+        logger.debug "Found an existing DHCP record #{r}, reusing..."
+        return r.ip
+      end
+
+      nil
     end
 
     def find_network(network_address)

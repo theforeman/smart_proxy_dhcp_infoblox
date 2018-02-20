@@ -1,50 +1,58 @@
 require 'test_helper'
 require 'infoblox'
-require 'smart_proxy_dhcp_infoblox/unused_ips'
+require 'dhcp_common/free_ips'
+require 'smart_proxy_dhcp_infoblox/dhcp_infoblox_main'
+require 'ostruct'
 
 class UnusedIpTest < Test::Unit::TestCase
   def setup
     @connection = Object.new
+    @crud = Object.new
+    @restart_grid = Object.new
+    @managed_subnets = nil
     @network_view = "another"
-    @unused_ips = ::Proxy::DHCP::Infoblox::UnusedIps.new(@connection, false, @network_view)
+    @unused_ips = ::Proxy::DHCP::FreeIps.new
     @network = Infoblox::Network.new(:network => '1.1.1.0/24')
-    @range = Infoblox::Range.new(:start_addr => '1.1.1.0', :end_addr => '1.1.1.253')
-  end
-
-  def test_excluded_ips
-    assert_equal ['192.168.42.254', '192.168.42.255'], @unused_ips.excluded_ips('192.168.42.0/24', '192.168.42.0', '192.168.42.253')
-  end
-
-  def test_excluded_ips_is_empty_when_range_start_is_nil
-    assert @unused_ips.excluded_ips('192.168.42.0/24', nil, '192.168.42.253').empty?
-  end
-
-  def test_excluded_ips_is_empty_when_range_end_is_nil
-    assert @unused_ips.excluded_ips('192.168.42.0/24', '192.168.42.250', nil).empty?
+    @provider = Proxy::DHCP::Infoblox::Provider.new(@connection, @crud, @restart_grid,
+                                                    @unused_ips, @managed_subnets, @network_view)
   end
 
   def test_unused_network_ip
-    ::Infoblox::Network.expects(:find).with(@connection, 'network' => '1.1.1.0',
-                                            '_max_results' => 1, 'network_view' => @network_view).returns([@network])
-    @network.expects(:next_available_ip).with(1, ['1.1.1.254', '1.1.1.255']).returns(['1.1.1.1'])
-    assert_equal '1.1.1.1', @unused_ips.unused_network_ip('1.1.1.0', '1.1.1.0', '1.1.1.253')
+    expected_ip = '1.1.1.1'
+    @provider.expects(:get_subnet).with('1.1.0.0').returns(::Proxy::DHCP::Subnet.new('1.1.0.0', '255.255.0.0'))
+    @provider.expects(:all_hosts).with('1.1.0.0').returns([host = Object.new])
+    @provider.expects(:all_leases).with('1.1.0.0').returns([lease = Object.new])
+    @unused_ips.expects(:find_free_ip).with('1.1.0.1', '1.1.255.254', [host, lease]).returns(expected_ip)
+
+    ip = @provider.unused_ip('1.1.0.0', nil, nil, nil)
+
+    assert_equal expected_ip, ip
   end
 
-  def test_unused_range_ip
-    ::Infoblox::Range.expects(:find).with(@connection, 'network' => '1.1.1.0', 'network_view' => @network_view).returns([@range])
-    @range.expects(:next_available_ip).with(1).returns(['1.1.1.1'])
-    assert_equal '1.1.1.1', @unused_ips.unused_range_ip('1.1.1.0', '1.1.1.0', '1.1.1.253')
+  def test_unused_network_ip_with_mac_address_present
+    expected_ip = '1.1.1.1'
+    mac_address = '00:01:02:03:04:05'
+    @provider.expects(:get_subnet).with('1.1.0.0').returns(subnet = ::Proxy::DHCP::Subnet.new('1.1.0.0', '255.255.0.0'))
+    @provider.expects(:find_ip_by_mac_address_and_range).with(subnet, mac_address, '1.1.0.1', '1.1.255.254').returns(expected_ip)
+
+    ip = @provider.unused_ip('1.1.0.0', mac_address, nil, nil)
+
+    assert_equal expected_ip, ip
   end
 
-  def test_unused_ip_uses_network_api_when_use_ranges_is_false
-    unused_ips = ::Proxy::DHCP::Infoblox::UnusedIps.new(@connection, false, @network_view)
-    unused_ips.expects(:unused_network_ip).with('1.1.1.0', '1.1.1.0', '1.1.1.253')
-    unused_ips.unused_ip('1.1.1.0', '1.1.1.0', '1.1.1.253')
-  end
+  def test_unused_network_ip_with_mac_address_present_with_address_outside_range
+    expected_ip = '1.1.1.1'
+    start_range = '1.1.10.1'
+    end_range = '1.1.100.1'
+    mac_address = '00:01:02:03:04:05'
+    @provider.expects(:get_subnet).with('1.1.0.0').returns(subnet = ::Proxy::DHCP::Subnet.new('1.1.0.0', '255.255.0.0'))
+    @crud.expects(:find_record_by_mac).with('1.1.0.0/16', mac_address).returns(OpenStruct.new(:ip => '10.0.0.1'))
+    @provider.expects(:all_hosts).with('1.1.0.0').returns([host = Object.new])
+    @provider.expects(:all_leases).with('1.1.0.0').returns([lease = Object.new])
+    @unused_ips.expects(:find_free_ip).with(start_range, end_range, [host, lease]).returns(expected_ip)
 
-  def test_unused_ip_uses_range_api_when_use_ranges_is_true
-    unused_ips = ::Proxy::DHCP::Infoblox::UnusedIps.new(@connection, true, @network_view)
-    unused_ips.expects(:unused_range_ip).with('1.1.1.0', '1.1.1.0', '1.1.1.253')
-    unused_ips.unused_ip('1.1.1.0', '1.1.1.0', '1.1.1.253')
+    ip = @provider.unused_ip('1.1.0.0', mac_address, start_range, end_range)
+
+    assert_equal expected_ip, ip
   end
 end

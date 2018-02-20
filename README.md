@@ -28,7 +28,6 @@ Configuration options for this plugin are in `/etc/foreman-proxy/settings.d/dhcp
 * username: API Username
 * password: API Password
 * record_type: host / fixedaddress (see different record types chapter)
-* use_ranges: use infoblox ranges (true) or infoblox networks (false) to find the next free ip in your infoblox
 
 ## Different record types
 The main difference between host and fixedaddress is that a host record already includes the dns records. It's an infoblox object that includes dhcp/a record/ptr records. If you use the host objects there is no need to use a dns smart proxy. Everything gets handled inside the dhcp smart proxy. This does however limit functionality. You can't delete conflicting records or you can't change dns names using foreman gui. Beware when editing host objects manually in infoblox, once you delete a host in foreman all associated host objects get deleted.
