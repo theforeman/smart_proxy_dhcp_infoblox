@@ -18,7 +18,7 @@ class IntegrationTest < ::Test::Unit::TestCase
   end
 
   def setup
-    @free_ips = ::Proxy::DHCP::Infoblox::UnusedIps.new(nil, false, "default")
+    @free_ips = ::Proxy::DHCP::FreeIps.new
     @server = ::Proxy::DHCP::Infoblox::Provider.new(nil, Object.new, Object.new, @free_ips, [],
                                                     "default")
 
@@ -43,7 +43,10 @@ class IntegrationTest < ::Test::Unit::TestCase
   end
 
   def test_get_unused_ip
-    @free_ips.expects(:unused_ip).with("10.0.0.0", "10.0.0.100", "10.0.0.200").returns("10.0.0.150")
+    @server.expects(:get_subnet).with("10.0.0.0").returns(::Proxy::DHCP::Subnet.new("10.0.0.0", "255.255.255.0"))
+    @server.expects(:all_hosts).with("10.0.0.0").returns([@expected_reservation])
+    @server.expects(:all_leases).with("10.0.0.0").returns([])
+    @free_ips.expects(:find_free_ip).with("10.0.0.100", "10.0.0.200", [@expected_reservation]).returns("10.0.0.150")
 
     get "/10.0.0.0/unused_ip?from=10.0.0.100&to=10.0.0.200"
 

@@ -11,10 +11,5 @@
 # Record type to manage: can be "host" or "fixedaddress"
 #
 :record_type: 'host'
-#
-# Use  pre-definded ranges in networks to find available IP's
-#
-:use_ranges: false
-
 #:dns_view: 'non-default'
 #:network_view: 'another-non-default'

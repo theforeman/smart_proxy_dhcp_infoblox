@@ -1,18 +1,18 @@
 require 'test_helper'
 require 'infoblox'
 require 'dhcp_common/dhcp_common'
+require 'dhcp_common/free_ips'
 require 'smart_proxy_dhcp_infoblox/plugin_configuration'
 require 'smart_proxy_dhcp_infoblox/record_type_validator'
 require 'smart_proxy_dhcp_infoblox/dhcp_infoblox_plugin'
 require 'smart_proxy_dhcp_infoblox/host_ipv4_address_crud'
 require 'smart_proxy_dhcp_infoblox/fixed_address_crud'
 require 'smart_proxy_dhcp_infoblox/grid_restart'
-require 'smart_proxy_dhcp_infoblox/unused_ips'
 require 'smart_proxy_dhcp_infoblox/dhcp_infoblox_main'
 
 class PluginDefaultConfigurationTest < Test::Unit::TestCase
   def test_default_settings
-    assert_equal({:record_type => 'host', :range => false, :dns_view => "default", :network_view => "default"},
+    assert_equal({:record_type => 'host', :blacklist_duration_minutes => 30*60, :dns_view => "default", :network_view => "default"},
                  Proxy::DHCP::Infoblox::Plugin.default_settings)
   end
 end
@@ -22,7 +22,7 @@ class InfobloxDhcpProductionWiringTest < Test::Unit::TestCase
     @network_view = "network_view"
     @dns_view = "dns_view"
     @settings = {:username => 'user', :password => 'password', :server => '127.0.0.1', :record_type => 'host',
-                 :use_ranges => true, :subnets => ['1.1.1.0/255.255.255.0'],
+                 :subnets => ['1.1.1.0/255.255.255.0'], :blacklist_duration_minutes => 300,
                  :dns_view => @dns_view, :network_view => @network_view}
     @container = ::Proxy::DependencyInjection::Container.new
     Proxy::DHCP::Infoblox::PluginConfiguration.new.load_dependency_injection_wirings(@container, @settings)
@@ -37,10 +37,9 @@ class InfobloxDhcpProductionWiringTest < Test::Unit::TestCase
   end
 
   def test_unused_ips_configuration
-    free_ips = @container.get_dependency(:unused_ips)
-    assert_not_nil free_ips.connection
-    assert free_ips.use_ranges
-    assert_equal @network_view, free_ips.network_view
+    unused_ips = @container.get_dependency(:unused_ips)
+    assert unused_ips
+    assert_equal 300, unused_ips.blacklist_interval
   end
 
   def test_host_ipv4_crud_configuration
@@ -64,7 +63,7 @@ class InfobloxDhcpProductionWiringTest < Test::Unit::TestCase
     provider = @container.get_dependency(:dhcp_provider)
     assert_not_nil provider.connection
     assert_not_nil provider.restart_grid
-    assert_not_nil provider.unused_ips
+    assert_not_nil provider.free_ips
     assert_equal @network_view, provider.network_view
     assert provider.managed_subnets.include?('1.1.1.0/255.255.255.0')
     assert provider.crud.instance_of?(::Proxy::DHCP::Infoblox::HostIpv4AddressCRUD)

@@ -3,10 +3,10 @@ module Proxy::DHCP::Infoblox
     def load_classes
       require 'infoblox'
       require 'dhcp_common/dhcp_common'
+      require 'dhcp_common/free_ips'
       require 'smart_proxy_dhcp_infoblox/host_ipv4_address_crud'
       require 'smart_proxy_dhcp_infoblox/fixed_address_crud'
       require 'smart_proxy_dhcp_infoblox/grid_restart'
-      require 'smart_proxy_dhcp_infoblox/unused_ips'
       require 'smart_proxy_dhcp_infoblox/dhcp_infoblox_main'
     end
 
@@ -20,10 +20,8 @@ module Proxy::DHCP::Infoblox
                                 end)
 
 
-      c.dependency :unused_ips, (lambda do
-        ::Proxy::DHCP::Infoblox::UnusedIps.new(c.get_dependency(:connection), settings[:use_ranges],
-                                             settings[:network_view])
-      end)
+      c.singleton_dependency :unused_ips, lambda {::Proxy::DHCP::FreeIps.new(settings[:blacklist_duration_minutes]) }
+
       c.dependency :host_ipv4_crud, (lambda do
         ::Proxy::DHCP::Infoblox::HostIpv4AddressCRUD.new(c.get_dependency(:connection), settings[:dns_view])
       end)
