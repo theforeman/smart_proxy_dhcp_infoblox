@@ -75,6 +75,7 @@ module Proxy::DHCP::Infoblox
     def get_subnet(subnet_address)
       address, prefix_length = full_network_address(subnet_address).split("/")
       netmask = cidr_to_ip_mask(prefix_length.to_i)
+      ::Proxy::DHCP::Subnet.new(address, netmask)
     end
 
     def find_ip_by_mac_address_and_range(subnet, mac_address, from_address, to_address)
