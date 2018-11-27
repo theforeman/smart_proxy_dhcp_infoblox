@@ -17,4 +17,6 @@ Gem::Specification.new do |s|
   s.test_files  = Dir['test/**/*']
 
   s.add_runtime_dependency('infoblox', '~> 2.0', '>= 2.0.4')
+
+  s.add_development_dependency('rubocop', '~> 0.50.0')
 end
