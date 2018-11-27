@@ -32,6 +32,9 @@ Style/Documentation:
 Style/StringLiterals:
   Enabled: false
 
+Style/NumericPredicate:
+  Enabled: false
+
 # Don't enforce frozen string literals
 Style/FrozenStringLiteralComment:
   Enabled: false
