@@ -1,0 +1,115 @@
+inherit_from: .rubocop_todo.yml
+
+AllCops:
+  TargetRubyVersion: 2.0
+
+# Don't prefer is_a? over kind_of?
+Style/ClassCheck:
+  Enabled: false
+
+# Don't enforce certain methods, e.g. detect over find
+Style/CollectionMethods:
+  Enabled: false
+
+# Don't enforce documentation
+Style/Documentation:
+  Enabled: false
+
+# Both double and single quotes are OK
+Style/StringLiterals:
+  Enabled: false
+
+# Don't enforce frozen string literals
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Metrics/ClassLength:
+  Exclude:
+    - 'test/**/*'
+
+Lint/AmbiguousRegexpLiteral:
+  Enabled: false
+
+Lint/AssignmentInCondition:
+  Enabled: false
+
+Security/Eval:
+  Enabled: false
+
+Lint/RescueException:
+  Enabled: false
+
+Lint/UnusedBlockArgument:
+  Enabled: false
+
+Lint/UnusedMethodArgument:
+  Enabled: false
+
+Style/SymbolProc:
+  Enabled: false
+
+Style/Lambda:
+  Enabled: false
+
+# enable both hash-rocket and ruby19 hashmap syntax
+Style/HashSyntax:
+  Enabled: false
+
+Performance/Casecmp:
+  Enabled: false
+
+Performance/RedundantMatch:
+  Enabled: true
+
+Performance/RedundantMerge:
+  Enabled: true
+
+#Allow both ['a', 'b'], %w[a b] and %w(a b) style arrays
+Style/WordArray:
+  Enabled: false
+
+Style/AndOr:
+  EnforcedStyle: conditionals
+
+Style/TernaryParentheses:
+  EnforcedStyle: require_parentheses_when_complex
+
+Style/InverseMethods:
+  Enabled: false
+
+Layout/FirstParameterIndentation:
+  EnforcedStyle: consistent
+
+Bundler/OrderedGems:
+  Enabled: false
+
+Style/Alias:
+  EnforcedStyle: prefer_alias_method
+
+Layout/DotPosition:
+  Enabled: false
+
+Style/IfUnlessModifier:
+  Enabled: false
+
+Style/ConditionalAssignment:
+  Enabled: false
+
+Style/EmptyMethod:
+  EnforcedStyle: expanded
+
+Style/ParenthesesAroundCondition:
+  Enabled: false
+
+Layout/AlignHash:
+  Enabled: false
+
+Layout/AlignParameters:
+  Enabled: false
+
+# disabled until we can configure "+" as concat sign
+Style/LineEndConcatenation:
+  Enabled: false
+
+Style/ParallelAssignment:
+  Enabled: false
