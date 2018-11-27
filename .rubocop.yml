@@ -3,6 +3,15 @@ inherit_from: .rubocop_todo.yml
 AllCops:
   TargetRubyVersion: 2.0
 
+Metrics/LineLength:
+  Max: 200
+
+Layout/LeadingCommentSpace:
+  Enabled: false
+
+Layout/MultilineMethodCallBraceLayout:
+  Enabled: false
+
 # Don't prefer is_a? over kind_of?
 Style/ClassCheck:
   Enabled: false
