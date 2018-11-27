@@ -64,6 +64,18 @@ Style/Lambda:
 Style/HashSyntax:
   Enabled: false
 
+Style/SingleLineMethods:
+  Enabled: false
+
+Style/FormatString:
+  Enabled: false
+
+Style/NumericLiterals:
+  Enabled: false
+
+Style/TrailingCommaInLiteral:
+  Enabled: false
+
 Performance/Casecmp:
   Enabled: false
 

@@ -30,7 +30,7 @@ module Proxy::DHCP::Infoblox
       c.dependency :dhcp_provider, (lambda do
                                       ::Proxy::DHCP::Infoblox::Provider.new(
                                         c.get_dependency(:connection),
-                                        settings[:record_type] == 'host' ? c.get_dependency(:host_ipv4_crud) : c.get_dependency(:fixed_address_crud),
+                                        (settings[:record_type] == 'host') ? c.get_dependency(:host_ipv4_crud) : c.get_dependency(:fixed_address_crud),
                                         c.get_dependency(:grid_restart),
                                         c.get_dependency(:unused_ips),
                                         settings[:subnets],
