@@ -17,7 +17,7 @@ module Proxy::DHCP::Infoblox
                                                              :host => settings[:server], :ssl_opts => { :verify => true }, :logger => ::Proxy::LogBuffer::Decorator.instance)
                                 end)
 
-      c.singleton_dependency :unused_ips, lambda {::Proxy::DHCP::FreeIps.new(settings[:blacklist_duration_minutes]) }
+      c.singleton_dependency :unused_ips, lambda { ::Proxy::DHCP::FreeIps.new(settings[:blacklist_duration_minutes]) }
 
       c.dependency :host_ipv4_crud, (lambda do
         ::Proxy::DHCP::Infoblox::HostIpv4AddressCRUD.new(c.get_dependency(:connection), settings[:dns_view])
@@ -25,7 +25,7 @@ module Proxy::DHCP::Infoblox
       c.dependency :fixed_address_crud, (lambda do
         ::Proxy::DHCP::Infoblox::FixedAddressCRUD.new(c.get_dependency(:connection), settings[:network_view])
       end)
-      c.dependency :grid_restart, lambda { ::Proxy::DHCP::Infoblox::GridRestart.new(c.get_dependency(:connection))}
+      c.dependency :grid_restart, lambda { ::Proxy::DHCP::Infoblox::GridRestart.new(c.get_dependency(:connection)) }
       c.dependency :dhcp_provider, (lambda do
                                         ::Proxy::DHCP::Infoblox::Provider.new(
                                           c.get_dependency(:connection),

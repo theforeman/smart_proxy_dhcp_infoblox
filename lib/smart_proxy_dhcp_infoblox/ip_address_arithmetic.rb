@@ -2,15 +2,15 @@ module ::Proxy::DHCP::Infoblox
   module IpAddressArithmetic
     def cidr_to_ip_mask(prefix_length)
       bitmask = 0xFFFFFFFF ^ (2**(32 - prefix_length) - 1)
-      (0..3).map {|i| (bitmask >> i * 8) & 0xFF}.reverse.join('.')
+      (0..3).map { |i| (bitmask >> i * 8) & 0xFF }.reverse.join('.')
     end
 
     def ipv4_to_i(an_address)
-      an_address.split('.').inject(0) {|a, c| (a << 8) + c.to_i}
+      an_address.split('.').inject(0) { |a, c| (a << 8) + c.to_i }
     end
 
     def i_to_ipv4(i)
-      (0..3).inject([]) {|a, c| a.push((i >> (c * 8)) & 0xFF)}.reverse.join('.')
+      (0..3).inject([]) { |a, c| a.push((i >> (c * 8)) & 0xFF) }.reverse.join('.')
     end
 
     def cidr_to_bitmask(prefix_length)

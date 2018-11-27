@@ -12,7 +12,7 @@ module ::Proxy::DHCP::Infoblox
 
       def add_children(values)
         return if values.empty?
-        node = (found = children.find {|n| n.value == values.first}).nil? ? add_child(Node.new(values.first)) : found
+        node = (found = children.find { |n| n.value == values.first }).nil? ? add_child(Node.new(values.first)) : found
         node.add_children(values[1..-1])
       end
 
@@ -31,18 +31,18 @@ module ::Proxy::DHCP::Infoblox
       end
 
       def group_children
-        children.each {|n| n.group_children}
+        children.each { |n| n.group_children }
         return if children.size < 2
         @children = children[1..-1].inject([MergedNode.new(children.first)]) do |grouped, to_group|
           current = MergedNode.new(to_group)
-          found = grouped.find {|g| ((g.value != ['0?'] && current.value != ['0?']) || (current.value == ['0?'] && g.value == ['0?'])) && (g.children == current.children)}
+          found = grouped.find { |g| ((g.value != ['0?'] && current.value != ['0?']) || (current.value == ['0?'] && g.value == ['0?'])) && (g.children == current.children) }
           found.nil? ? grouped.push(current) : found.merge(current)
           grouped
         end
       end
 
       def as_regex
-        children.empty? ? [value.to_s] : children.map {|c| c.as_regex.map {|r| value.to_s + r}}.flatten
+        children.empty? ? [value.to_s] : children.map { |c| c.as_regex.map { |r| value.to_s + r } }.flatten
       end
     end
 
@@ -59,7 +59,7 @@ module ::Proxy::DHCP::Infoblox
       end
 
       def as_regex
-        children.empty? ? [value_as_regex] : children.map {|c| c.as_regex.map {|r| value_as_regex + r}}.flatten
+        children.empty? ? [value_as_regex] : children.map { |c| c.as_regex.map { |r| value_as_regex + r } }.flatten
       end
 
       def value_as_regex
@@ -79,7 +79,7 @@ module ::Proxy::DHCP::Infoblox
 
       def as_regex
         group_children
-        "(%s)" % children.map {|c| c.as_regex}.join('|')
+        "(%s)" % children.map { |c| c.as_regex }.join('|')
       end
 
       def digits(a_number)
@@ -94,7 +94,7 @@ module ::Proxy::DHCP::Infoblox
 
     def range_regex(range_start, range_end)
       root = Root.new(nil)
-      (range_start..range_end).to_a.each {|i| root.add_number(i)}
+      (range_start..range_end).to_a.each { |i| root.add_number(i) }
       root.as_regex
     end
   end
@@ -111,7 +111,7 @@ module ::Proxy::DHCP::Infoblox
       range_start_octets = range.first.split('.').map(&:to_i)
       range_end_octets = range.last.split('.').map(&:to_i)
 
-      (0..3).map {|i| [range_start_octets[i], range_end_octets[i]]}
+      (0..3).map { |i| [range_start_octets[i], range_end_octets[i]] }
     end
 
     def range_to_regex(range)
