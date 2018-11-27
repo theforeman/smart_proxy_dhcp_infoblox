@@ -71,7 +71,7 @@ class InfobloxDhcpProductionWiringTest < Test::Unit::TestCase
 
   def test_provider_configuration_with_fixedaddress_crud
     Proxy::DHCP::Infoblox::PluginConfiguration.new.
-        load_dependency_injection_wirings(@container, :username => 'user', :password => 'password',
+      load_dependency_injection_wirings(@container, :username => 'user', :password => 'password',
                                           :server => '127.0.0.1', :record_type => 'fixed_address')
 
     provider = @container.get_dependency(:dhcp_provider)

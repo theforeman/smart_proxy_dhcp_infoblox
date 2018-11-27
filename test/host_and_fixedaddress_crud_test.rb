@@ -28,7 +28,7 @@ module CommoncrudTests
                                                                 :mac => '00:01:02:03:04:05',
                                                                 :configure_for_dhcp => false)])
     @entity.expects(:find).
-        with(@connection, search_condition('ipv4addr' => '192.168.42.1', '_max_results' => 2147483646)).returns([found_record])
+      with(@connection, search_condition('ipv4addr' => '192.168.42.1', '_max_results' => 2147483646)).returns([found_record])
     assert @crud.find_records_by_ip('192.168.42.0/24', '192.168.42.1').empty?
   end
 
