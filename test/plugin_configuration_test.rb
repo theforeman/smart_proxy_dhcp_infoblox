@@ -12,7 +12,7 @@ require 'smart_proxy_dhcp_infoblox/dhcp_infoblox_main'
 
 class PluginDefaultConfigurationTest < Test::Unit::TestCase
   def test_default_settings
-    assert_equal({:record_type => 'host', :blacklist_duration_minutes => 30*60, :dns_view => "default", :network_view => "default"},
+    assert_equal({:record_type => 'host', :blacklist_duration_minutes => 30 * 60, :dns_view => "default", :network_view => "default"},
                  Proxy::DHCP::Infoblox::Plugin.default_settings)
   end
 end

@@ -13,15 +13,6 @@ Bundler/DuplicatedGem:
   Exclude:
     - 'Gemfile'
 
-# Offense count: 7
-# Cop supports --auto-correct.
-# Configuration parameters: AllowForAlignment.
-Layout/SpaceAroundOperators:
-  Exclude:
-    - 'lib/smart_proxy_dhcp_infoblox/dhcp_infoblox_plugin.rb'
-    - 'lib/smart_proxy_dhcp_infoblox/ip_address_arithmetic.rb'
-    - 'test/plugin_configuration_test.rb'
-
 # Offense count: 1
 # Cop supports --auto-correct.
 Layout/SpaceBeforeComma:
