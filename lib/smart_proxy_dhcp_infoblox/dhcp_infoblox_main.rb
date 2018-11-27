@@ -17,7 +17,7 @@ module Proxy::DHCP::Infoblox
       super('infoblox', managed_subnets, nil, unused_ips)
     end
 
-    def find_subnet(address);::Proxy::DHCP::Subnet.new(address, '255.255.255.0'); end
+    def find_subnet(address); ::Proxy::DHCP::Subnet.new(address, '255.255.255.0'); end
 
     def subnets
       ::Infoblox::Network.all(connection).map do |network|
