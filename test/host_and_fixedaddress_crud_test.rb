@@ -105,15 +105,15 @@ class HostCrudTest < Test::Unit::TestCase
     @subnet_ip = '192.168.42.0'
 
     @host = ::Infoblox::Host.new(
-        :name => @hostname,
-        :view => @view,
-        :ipv4addrs => [{:ipv4addr => @ip, :mac => @mac, :nextserver => @nextserver, :use_nextserver => true,
-                        :bootfile => @filename, :use_bootfile => true, :configure_for_dhcp => true}])
+      :name => @hostname,
+      :view => @view,
+      :ipv4addrs => [{:ipv4addr => @ip, :mac => @mac, :nextserver => @nextserver, :use_nextserver => true,
+                      :bootfile => @filename, :use_bootfile => true, :configure_for_dhcp => true}])
     @host1 = ::Infoblox::Host.new(
-        :name => 'another.test.com',
-        :view => @view,
-        :ipv4addrs => [{:ipv4addr => @ip, :mac => '00:01:02:03:05:07', :nextserver => @nextserver, :use_nextserver => true,
-                        :bootfile => @filename, :use_bootfile => true, :configure_for_dhcp => true}])
+      :name => 'another.test.com',
+      :view => @view,
+      :ipv4addrs => [{:ipv4addr => @ip, :mac => '00:01:02:03:05:07', :nextserver => @nextserver, :use_nextserver => true,
+                      :bootfile => @filename, :use_bootfile => true, :configure_for_dhcp => true}])
 
     @reservation = ::Proxy::DHCP::Reservation.new(@hostname, @ip, @mac, ::Proxy::DHCP::Subnet.new(@subnet_ip, '255.255.255.0'),
                                                   :hostname => @hostname, :nextServer => @nextserver, :filename => @filename,
@@ -150,7 +150,7 @@ class HostCrudTest < Test::Unit::TestCase
     @crud.expects(:build_host).with(:ip => @ip, :mac => @mac, :hostname => @hostname).returns(@host)
     @host.expects(:post).raises(Infoblox::Error.new("IB.Data.Conflict"))
     @crud.expects(:find_hosts).with('ipv4addr' => @ip).returns(
-        [::Infoblox::Host.new(:name => @hostname, :ipv4addrs => [{:ipv4addr => @ip, :mac => '11:22:33:44:55:66"', :configure_for_dhcp => true}])])
+      [::Infoblox::Host.new(:name => @hostname, :ipv4addrs => [{:ipv4addr => @ip, :mac => '11:22:33:44:55:66"', :configure_for_dhcp => true}])])
 
     assert_raises(Proxy::DHCP::Collision) { @crud.add_record(:ip => @ip, :mac => @mac, :hostname => @hostname) }
   end
@@ -178,11 +178,11 @@ class FixedaddressCrudTest < Test::Unit::TestCase
     @subnet_ip = '192.168.42.0'
 
     @host = ::Infoblox::Fixedaddress.new(
-        :name => @hostname,
-        :ipv4addr => @ip, :mac => @mac, :network_view => @network_view)
+      :name => @hostname,
+      :ipv4addr => @ip, :mac => @mac, :network_view => @network_view)
     @host1 = ::Infoblox::Fixedaddress.new(
-        :name => 'another.test.com',
-        :ipv4addr => @ip, :mac => '00:01:02:03:05:07', :network_view => @network_view)
+      :name => 'another.test.com',
+      :ipv4addr => @ip, :mac => '00:01:02:03:05:07', :network_view => @network_view)
 
     @reservation = ::Proxy::DHCP::Reservation.new(@hostname, @ip, @mac, ::Proxy::DHCP::Subnet.new(@subnet_ip, '255.255.255.0'),
                                                   :deleteable => true, :hostname => @hostname)
@@ -212,8 +212,8 @@ class FixedaddressCrudTest < Test::Unit::TestCase
     @crud.expects(:build_host).with(:ip => @ip, :mac => @mac, :hostname => @hostname).returns(@host)
     @host.expects(:post).raises(Infoblox::Error.new("IB.Data.Conflict"))
     @crud.expects(:find_hosts).with('ipv4addr' => @ip).returns(
-        [::Infoblox::Fixedaddress.new(:name => @hostname, :ipv4addr => @ip, :mac => '11:22:33:44:55:66',
-                                      :network_view => @network_view)])
+      [::Infoblox::Fixedaddress.new(:name => @hostname, :ipv4addr => @ip, :mac => '11:22:33:44:55:66',
+                                    :network_view => @network_view)])
 
     assert_raises(Proxy::DHCP::Collision) { @crud.add_record(:ip => @ip, :mac => @mac, :hostname => @hostname) }
   end
