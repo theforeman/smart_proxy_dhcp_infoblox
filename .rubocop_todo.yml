@@ -13,20 +13,6 @@ Bundler/DuplicatedGem:
   Exclude:
     - 'Gemfile'
 
-# Offense count: 48
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles, EnforcedStyleForEmptyBraces, SupportedStylesForEmptyBraces, SpaceBeforeBlockParameters.
-# SupportedStyles: space, no_space
-# SupportedStylesForEmptyBraces: space, no_space
-Layout/SpaceInsideBlockBraces:
-  Exclude:
-    - 'lib/smart_proxy_dhcp_infoblox/common_crud.rb'
-    - 'lib/smart_proxy_dhcp_infoblox/fixed_address_crud.rb'
-    - 'lib/smart_proxy_dhcp_infoblox/host_ipv4_address_crud.rb'
-    - 'lib/smart_proxy_dhcp_infoblox/ip_address_arithmetic.rb'
-    - 'lib/smart_proxy_dhcp_infoblox/network_address_range_regex_generator.rb'
-    - 'lib/smart_proxy_dhcp_infoblox/plugin_configuration.rb'
-
 # Offense count: 28
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles, EnforcedStyleForEmptyBraces, SupportedStylesForEmptyBraces.

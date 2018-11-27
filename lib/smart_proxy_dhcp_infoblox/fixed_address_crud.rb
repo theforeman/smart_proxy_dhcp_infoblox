@@ -14,7 +14,7 @@ module ::Proxy::DHCP::Infoblox
     def all_hosts(subnet_address)
       network = ::Infoblox::Fixedaddress.find(@connection, 'network' => subnet_address, 'network_view' => network_view,
                                               '_max_results' => 2147483646) #2**(32-cidr_to_i(subnet_address)))
-      network.map {|h| build_reservation(h.name, h, subnet_address)}.compact
+      network.map { |h| build_reservation(h.name, h, subnet_address) }.compact
     end
 
     def find_record_by_ip(subnet_address, ip_address)
@@ -26,7 +26,7 @@ module ::Proxy::DHCP::Infoblox
     def find_records_by_ip(subnet_address, ip_address)
       found = find_hosts({'ipv4addr' => ip_address}, 2147483646)
       return [] if found.empty?
-      to_return = found.map {|record| build_reservation(record.name, record, subnet_address)}
+      to_return = found.map { |record| build_reservation(record.name, record, subnet_address) }
       to_return.compact
     end
 
