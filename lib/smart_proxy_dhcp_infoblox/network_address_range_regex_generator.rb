@@ -33,11 +33,10 @@ module ::Proxy::DHCP::Infoblox
       def group_children
         children.each { |n| n.group_children }
         return if children.size < 2
-        @children = children[1..-1].inject([MergedNode.new(children.first)]) do |grouped, to_group|
+        @children = children[1..-1].each_with_object([MergedNode.new(children.first)]) do |to_group, grouped|
           current = MergedNode.new(to_group)
           found = grouped.find { |g| ((g.value != ['0?'] && current.value != ['0?']) || (current.value == ['0?'] && g.value == ['0?'])) && (g.children == current.children) }
           found.nil? ? grouped.push(current) : found.merge(current)
-          grouped
         end
       end
 
@@ -63,7 +62,7 @@ module ::Proxy::DHCP::Infoblox
       end
 
       def value_as_regex
-        value.size < 2 ? value.first.to_s : "[#{value.join('')}]"
+        (value.size < 2) ? value.first.to_s : "[#{value.join('')}]"
       end
 
       def ==(other)
@@ -86,7 +85,7 @@ module ::Proxy::DHCP::Infoblox
         to_return = []
         begin
           to_return.push(a_number % 10)
-          a_number = a_number / 10
+          a_number /= 10
         end while a_number != 0
         to_return.reverse
       end
