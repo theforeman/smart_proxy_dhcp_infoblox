@@ -16,7 +16,6 @@ class InfobloxProviderTest < Test::Unit::TestCase
     @network = Infoblox::Network.new(:network => '192.168.42.0/24')
     @subnet = ::Proxy::DHCP::Subnet.new('192.168.42.0', '255.255.255.0')
 
-
     @network_2 = Infoblox::Network.new(:network => '192.168.43.0/24')
     @provider = Proxy::DHCP::Infoblox::Provider.new(@connection, @crud, @restart_grid,
                                                     @unused_ips, @managed_subnets, @network_view)
