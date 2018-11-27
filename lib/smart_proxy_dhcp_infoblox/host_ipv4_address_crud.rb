@@ -16,7 +16,7 @@ module ::Proxy::DHCP::Infoblox
       address_range_regex = NetworkAddressesRegularExpressionGenerator.new.generate_regex(subnet_address)
 
       hosts = ::Infoblox::Host.find(
-          @connection,
+        @connection,
           'ipv4addr~' => address_range_regex,
           'view' => dns_view,
           '_max_results' => 2147483646)
