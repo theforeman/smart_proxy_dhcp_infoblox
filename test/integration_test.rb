@@ -26,7 +26,6 @@ class IntegrationTest < ::Test::Unit::TestCase
                              "subnet" => "10.0.0.0/255.255.255.0", "hostname" => "testing-01"}
   end
 
-
   def test_get_subnets
     @server.expects(:subnets).returns([])
     get "/"
