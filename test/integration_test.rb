@@ -72,7 +72,7 @@ class IntegrationTest < ::Test::Unit::TestCase
 
   def test_create_record
     record = {
-        "hostname" => "test-02",
+      "hostname" => "test-02",
         "ip"       => "10.0.0.250",
         "mac"      => "10:10:10:10:10:10",
         "network"  => "10.0.0.0",
