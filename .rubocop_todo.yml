@@ -7,13 +7,6 @@
 # versions of RuboCop, may require this file to be generated again.
 
 # Offense count: 1
-# Configuration parameters: Include.
-# Include: **/Gemfile, **/gems.rb
-Bundler/DuplicatedGem:
-  Exclude:
-    - 'Gemfile'
-
-# Offense count: 1
 Lint/Loop:
   Exclude:
     - 'lib/smart_proxy_dhcp_infoblox/network_address_range_regex_generator.rb'
