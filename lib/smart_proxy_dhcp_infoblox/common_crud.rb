@@ -54,7 +54,7 @@ module ::Proxy::DHCP::Infoblox
     end
 
     def del_records_by_ip(ip_address)
-      found = find_hosts({'ipv4addr' => ip_address}, 2147483646)
+      found = find_hosts({ 'ipv4addr' => ip_address }, 2147483646)
       return if found.empty?
       found.each { |record| record.delete }
       nil

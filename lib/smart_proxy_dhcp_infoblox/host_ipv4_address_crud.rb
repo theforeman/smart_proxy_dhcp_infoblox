@@ -32,7 +32,7 @@ module ::Proxy::DHCP::Infoblox
     end
 
     def find_records_by_ip(subnet_address, ip_address)
-      found = find_hosts({'ipv4addr' => ip_address}, 2147483646)
+      found = find_hosts({ 'ipv4addr' => ip_address }, 2147483646)
       return [] if found.empty?
       to_return = found.map { |record| build_reservation(record.name, record.ipv4addrs.find { |ip| ip.ipv4addr == ip_address }, subnet_address) }
       to_return.compact
