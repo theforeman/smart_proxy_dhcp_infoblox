@@ -11,7 +11,6 @@ module Proxy::DHCP::Infoblox
     end
 
     def load_dependency_injection_wirings(c, settings)
-
       c.dependency :connection, (lambda do
                                   ::Infoblox.wapi_version = '2.0'
                                   ::Infoblox::Connection.new(:username => settings[:username] ,:password => settings[:password],
