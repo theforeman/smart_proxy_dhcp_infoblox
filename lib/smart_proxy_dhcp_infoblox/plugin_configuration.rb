@@ -38,4 +38,3 @@ module Proxy::DHCP::Infoblox
     end
   end
 end
-
