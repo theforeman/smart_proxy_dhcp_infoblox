@@ -13,13 +13,6 @@ Bundler/DuplicatedGem:
   Exclude:
     - 'Gemfile'
 
-# Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: Width, IgnoredPatterns.
-Layout/IndentationWidth:
-  Exclude:
-    - 'lib/smart_proxy_dhcp_infoblox/plugin_configuration.rb'
-
 # Offense count: 2
 # Cop supports --auto-correct.
 Layout/LeadingCommentSpace:
