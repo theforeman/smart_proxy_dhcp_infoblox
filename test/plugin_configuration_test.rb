@@ -12,7 +12,7 @@ require 'smart_proxy_dhcp_infoblox/dhcp_infoblox_main'
 
 class PluginDefaultConfigurationTest < Test::Unit::TestCase
   def test_default_settings
-    assert_equal({:record_type => 'host', :blacklist_duration_minutes => 30 * 60, :dns_view => "default", :network_view => "default"},
+    assert_equal({ :record_type => 'host', :blacklist_duration_minutes => 30 * 60, :dns_view => "default", :network_view => "default" },
                  Proxy::DHCP::Infoblox::Plugin.default_settings)
   end
 end
@@ -21,9 +21,9 @@ class InfobloxDhcpProductionWiringTest < Test::Unit::TestCase
   def setup
     @network_view = "network_view"
     @dns_view = "dns_view"
-    @settings = {:username => 'user', :password => 'password', :server => '127.0.0.1', :record_type => 'host',
+    @settings = { :username => 'user', :password => 'password', :server => '127.0.0.1', :record_type => 'host',
                  :subnets => ['1.1.1.0/255.255.255.0'], :blacklist_duration_minutes => 300,
-                 :dns_view => @dns_view, :network_view => @network_view}
+                 :dns_view => @dns_view, :network_view => @network_view }
     @container = ::Proxy::DependencyInjection::Container.new
     Proxy::DHCP::Infoblox::PluginConfiguration.new.load_dependency_injection_wirings(@container, @settings)
   end
@@ -33,7 +33,7 @@ class InfobloxDhcpProductionWiringTest < Test::Unit::TestCase
     assert_equal 'https://127.0.0.1', connection.host
     assert_equal 'user', connection.username
     assert_equal 'password', connection.password
-    assert_equal({:verify => true}, connection.ssl_opts)
+    assert_equal({ :verify => true }, connection.ssl_opts)
   end
 
   def test_unused_ips_configuration

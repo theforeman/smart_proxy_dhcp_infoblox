@@ -22,8 +22,8 @@ class IntegrationTest < ::Test::Unit::TestCase
     @server = ::Proxy::DHCP::Infoblox::Provider.new(nil, Object.new, Object.new, @free_ips, [],
                                                     "default")
 
-    @expected_reservation = {"name" => "testing-01", "ip" => "10.0.0.200", "mac" => "11:22:33:a9:61:09",
-                             "subnet" => "10.0.0.0/255.255.255.0", "hostname" => "testing-01"}
+    @expected_reservation = { "name" => "testing-01", "ip" => "10.0.0.200", "mac" => "11:22:33:a9:61:09",
+                             "subnet" => "10.0.0.0/255.255.255.0", "hostname" => "testing-01" }
   end
 
   def test_get_subnets
