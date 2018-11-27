@@ -15,12 +15,6 @@ Bundler/DuplicatedGem:
 
 # Offense count: 1
 # Cop supports --auto-correct.
-Layout/SpaceAfterComma:
-  Exclude:
-    - 'lib/smart_proxy_dhcp_infoblox/plugin_configuration.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
 Layout/SpaceAfterSemicolon:
   Exclude:
     - 'lib/smart_proxy_dhcp_infoblox/dhcp_infoblox_main.rb'
