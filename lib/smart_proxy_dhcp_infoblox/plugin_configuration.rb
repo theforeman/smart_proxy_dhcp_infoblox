@@ -13,7 +13,7 @@ module Proxy::DHCP::Infoblox
     def load_dependency_injection_wirings(c, settings)
       c.dependency :connection, (lambda do
                                   ::Infoblox.wapi_version = '2.0'
-                                  ::Infoblox::Connection.new(:username => settings[:username] ,:password => settings[:password],
+                                  ::Infoblox::Connection.new(:username => settings[:username], :password => settings[:password],
                                                              :host => settings[:server], :ssl_opts => { :verify => true }, :logger => ::Proxy::LogBuffer::Decorator.instance)
                                 end)
 
