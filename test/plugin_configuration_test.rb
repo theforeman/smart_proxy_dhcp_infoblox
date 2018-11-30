@@ -33,7 +33,7 @@ class InfobloxDhcpProductionWiringTest < Test::Unit::TestCase
     assert_equal 'https://127.0.0.1', connection.host
     assert_equal 'user', connection.username
     assert_equal 'password', connection.password
-    assert_equal({:verify => false}, connection.ssl_opts)
+    assert_equal({:verify => true}, connection.ssl_opts)
   end
 
   def test_unused_ips_configuration
