@@ -39,6 +39,9 @@ Style/NumericPredicate:
 Style/FrozenStringLiteralComment:
   Enabled: false
 
+Metrics/AbcSize:
+  Enabled: false
+
 Metrics/ClassLength:
   Exclude:
     - 'test/**/*'
