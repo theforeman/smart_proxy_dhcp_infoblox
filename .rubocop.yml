@@ -42,6 +42,9 @@ Style/FrozenStringLiteralComment:
 Metrics/AbcSize:
   Enabled: false
 
+Style/SymbolArray:
+  Enabled: false
+
 Metrics/ClassLength:
   Exclude:
     - 'test/**/*'
