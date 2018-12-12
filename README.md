@@ -11,6 +11,19 @@ for how to install Smart Proxy plugins
 
 This plugin is compatible with Smart Proxy 1.11 or higher.
 
+Example installation command via foreman-installer:
+
+```
+# foreman-installer --enable-foreman-proxy-plugin-dhcp-infoblox \
+--foreman-proxy-dhcp-provider infoblox \
+--foreman-proxy-plugin-dhcp-infoblox-record-type host \
+--foreman-proxy-dhcp-server 192.168.201.2 \
+--foreman-proxy-plugin-dhcp-infoblox-username admin \
+--foreman-proxy-plugin-dhcp-infoblox-password infoblox \
+--foreman-proxy-plugin-dhcp-infoblox-network-view default \
+--foreman-proxy-plugin-dhcp-infoblox-dns-view default
+```
+
 When installing using "gem", make sure to install the bundle file:
 
     echo "gem 'smart_proxy_dhcp_infoblox'" > /usr/share/foreman-proxy/bundler.d/dhcp_infoblox.rb
