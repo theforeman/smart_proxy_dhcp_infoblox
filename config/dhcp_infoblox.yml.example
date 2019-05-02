@@ -1,15 +1,20 @@
 ---
-#
 # Configuration file for 'dhcp_infoblox' dhcp provider
 #
-# use :server setting in dhcp.yml if you are managing a dhcp server which is not localhost
-# use :subnets setting in dhcp.yml if you want to restrict subnets available to smart-proxy
-#
-:username: "infoblox"
+# Use :server setting in dhcp.yml if you are managing a dhcp server which is not localhost.
+# Use :subnets setting in dhcp.yml if you want to restrict subnets available to smart-proxy.
+
+# Credentials for Infoblox API, make sure the DHCP Role is assigned
+:username: "admin"
 :password: "infoblox"
-#
-# Record type to manage: can be "host" or "fixedaddress"
-#
-:record_type: 'host'
-#:dns_view: 'non-default'
-#:network_view: 'another-non-default'
+
+# Record type to manage: can be "host" or "fixedaddress". The latter is recommended as
+# "host" setting will cause conflicts when using Infoblox DNS smart proxy plugin. When
+# using "host" setting make sure domain exists in Infoblox.
+:record_type: 'fixedaddress'
+
+# View used for fixedaddress record type.
+#:network_view: 'default'
+
+# View used for host record type, usually 'default.myview' for custom names.
+#:dns_view: 'default'
