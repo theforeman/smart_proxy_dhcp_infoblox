@@ -3,12 +3,12 @@ inherit_from: .rubocop_todo.yml
 AllCops:
   TargetRubyVersion: 2.0
 
+Metrics:
+  Enabled: false
+
 # There's if statement in the Gemfile
 Bundler/DuplicatedGem:
   Enabled: false
-
-Metrics/LineLength:
-  Max: 200
 
 Layout/LeadingCommentSpace:
   Enabled: false
@@ -39,15 +39,8 @@ Style/NumericPredicate:
 Style/FrozenStringLiteralComment:
   Enabled: false
 
-Metrics/AbcSize:
-  Enabled: false
-
 Style/SymbolArray:
   Enabled: false
-
-Metrics/ClassLength:
-  Exclude:
-    - 'test/**/*'
 
 Lint/AmbiguousRegexpLiteral:
   Enabled: false
