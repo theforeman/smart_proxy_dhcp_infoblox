@@ -14,7 +14,7 @@ module Proxy::DHCP::Infoblox
       c.dependency :connection, (lambda {
         ::Infoblox.wapi_version = '2.0'
         ::Infoblox::Connection.new(:username => settings[:username], :password => settings[:password],
-                                   :host => settings[:server], :ssl_opts => { :verify => true },
+                                   :host => settings[:server], :ssl_opts => { :verify => !ENV['FOREMAN_INFOBLOX_NOSSLVERIFY'] },
                                    :logger => ::Proxy::LogBuffer::Decorator.instance)
       })
 

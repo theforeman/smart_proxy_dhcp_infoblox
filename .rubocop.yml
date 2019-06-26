@@ -2,6 +2,9 @@ inherit_from: .rubocop_todo.yml
 
 AllCops:
   TargetRubyVersion: 2.0
+  Exclude:
+    - 'test/**/*'
+    - 'vendor/**/*'
 
 Metrics:
   Enabled: false
@@ -79,33 +82,15 @@ Style/FormatString:
 Style/NumericLiterals:
   Enabled: false
 
-Style/TrailingCommaInLiteral:
-  Enabled: false
-
-Performance/Casecmp:
-  Enabled: false
-
-Performance/RedundantMatch:
-  Enabled: true
-
-Performance/RedundantMerge:
-  Enabled: true
-
 #Allow both ['a', 'b'], %w[a b] and %w(a b) style arrays
 Style/WordArray:
   Enabled: false
-
-Style/AndOr:
-  EnforcedStyle: conditionals
 
 Style/TernaryParentheses:
   EnforcedStyle: require_parentheses_when_complex
 
 Style/InverseMethods:
   Enabled: false
-
-Layout/FirstParameterIndentation:
-  EnforcedStyle: consistent
 
 Bundler/OrderedGems:
   Enabled: false
@@ -139,4 +124,16 @@ Style/LineEndConcatenation:
   Enabled: false
 
 Style/ParallelAssignment:
+  Enabled: false
+
+Performance/RegexpMatch:
+  Enabled: false
+
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+Lint/NonLocalExitFromIterator:
+  Enabled: false
+
+Lint/Loop:
   Enabled: false

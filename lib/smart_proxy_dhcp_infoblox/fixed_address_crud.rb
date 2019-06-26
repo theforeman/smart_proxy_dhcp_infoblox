@@ -1,3 +1,4 @@
+require 'yaml'
 require 'smart_proxy_dhcp_infoblox/common_crud'
 
 module ::Proxy::DHCP::Infoblox
@@ -58,6 +59,7 @@ module ::Proxy::DHCP::Infoblox
       host.bootfile = options[:filename]
       host.use_bootfile = true
       host.network_view = network_view
+      host.options = Proxy::DHCP::Infoblox::Plugin.settings.options
       host
     end
   end
