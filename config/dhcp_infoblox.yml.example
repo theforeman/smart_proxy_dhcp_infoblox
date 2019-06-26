@@ -18,3 +18,7 @@
 
 # View used for host record type, usually 'default.myview' for custom names.
 #:dns_view: 'default'
+
+# Number of seconds to wait after successful Grid restart (make sure to increase Foreman and CLI timeouts).
+# Set to 0 to disable the delay.
+#:wait_after_restart: 10

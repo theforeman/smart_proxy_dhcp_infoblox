@@ -12,7 +12,11 @@ require 'smart_proxy_dhcp_infoblox/dhcp_infoblox_main'
 
 class PluginDefaultConfigurationTest < Test::Unit::TestCase
   def test_default_settings
-    assert_equal({ :record_type => 'host', :blacklist_duration_minutes => 30 * 60, :dns_view => "default", :network_view => "default" },
+    assert_equal({ :record_type => 'fixedaddress',
+      :blacklist_duration_minutes => 30 * 60,
+      :wait_after_restart => 10,
+      :dns_view => "default",
+      :network_view => "default" },
                  Proxy::DHCP::Infoblox::Plugin.default_settings)
   end
 end
@@ -21,8 +25,8 @@ class InfobloxDhcpProductionWiringTest < Test::Unit::TestCase
   def setup
     @network_view = "network_view"
     @dns_view = "dns_view"
-    @settings = { :username => 'user', :password => 'password', :server => '127.0.0.1', :record_type => 'host',
-                 :subnets => ['1.1.1.0/255.255.255.0'], :blacklist_duration_minutes => 300,
+    @settings = { :username => 'user', :password => 'password', :server => '127.0.0.1', :record_type => 'fixedaddress',
+                 :subnets => ['1.1.1.0/255.255.255.0'], :blacklist_duration_minutes => 300, :wait_after_restart => 1,
                  :dns_view => @dns_view, :network_view => @network_view }
     @container = ::Proxy::DependencyInjection::Container.new
     Proxy::DHCP::Infoblox::PluginConfiguration.new.load_dependency_injection_wirings(@container, @settings)
@@ -66,7 +70,7 @@ class InfobloxDhcpProductionWiringTest < Test::Unit::TestCase
     assert_not_nil provider.free_ips
     assert_equal @network_view, provider.network_view
     assert provider.managed_subnets.include?('1.1.1.0/255.255.255.0')
-    assert provider.crud.instance_of?(::Proxy::DHCP::Infoblox::HostIpv4AddressCRUD)
+    assert provider.crud.instance_of?(::Proxy::DHCP::Infoblox::FixedAddressCRUD)
   end
 
   def test_provider_configuration_with_fixedaddress_crud
