@@ -208,6 +208,17 @@ class FixedaddressCrudTest < Test::Unit::TestCase
     assert_equal @network_view, built.network_view
   end
 
+  def test_build_host_with_options
+    begin
+      Proxy::DHCP::Infoblox::Plugin.settings.options = [{"name" => "xyz"}]
+
+      host = @crud.build_host(:ip => @ip, :mac => @mac, :hostname => @hostname)
+      assert_equal [{"name" => "xyz"}], host.instance_variable_get("@options")
+    ensure
+      Proxy::DHCP::Infoblox::Plugin.settings.options = []
+    end
+  end
+
   def test_add_record_with_collision
     @crud.expects(:build_host).with(:ip => @ip, :mac => @mac, :hostname => @hostname).returns(@host)
     @host.expects(:post).raises(Infoblox::Error.new("IB.Data.Conflict"))

@@ -22,3 +22,12 @@
 # Number of seconds to wait after successful Grid restart (make sure to increase Foreman and CLI timeouts).
 # Set to 0 to disable the delay.
 #:wait_after_restart: 10
+
+# DHCP custom options (name, num, value and vendor_class). Set to blank to ignore.
+# This is only used for 'fixedaddress' record types.
+#:options:
+  #-
+    #name: "DHCP option name"
+    #num: 1234
+    #value: "A value"
+    #vendor_class: "A vendor class"

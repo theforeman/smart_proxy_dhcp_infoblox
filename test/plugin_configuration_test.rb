@@ -16,6 +16,7 @@ class PluginDefaultConfigurationTest < Test::Unit::TestCase
       :blacklist_duration_minutes => 30 * 60,
       :wait_after_restart => 10,
       :dns_view => "default",
+      :options => [],
       :network_view => "default" },
                  Proxy::DHCP::Infoblox::Plugin.default_settings)
   end
