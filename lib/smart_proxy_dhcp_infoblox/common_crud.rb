@@ -17,6 +17,8 @@ module ::Proxy::DHCP::Infoblox
     def all_leases(network_address, subnet)
       address_range_regex = NetworkAddressesRegularExpressionGenerator.new.generate_regex(network_address)
       ::Infoblox::Lease.find(@connection, 'address~' => address_range_regex).map do |lease|
+        # Infoblox can return MAC address set to nil
+        next unless lease.hardware
         Proxy::DHCP::Lease.new(
           lease.client_hostname,
           lease.address,
@@ -27,7 +29,7 @@ module ::Proxy::DHCP::Infoblox
           lease.binding_state,
           :hostname => lease.client_hostname
         )
-      end
+      end.compact
     end
 
     def find_record(subnet_address, an_address)
