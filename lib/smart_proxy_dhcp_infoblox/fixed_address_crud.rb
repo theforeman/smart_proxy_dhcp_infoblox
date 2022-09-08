@@ -5,16 +5,40 @@ module ::Proxy::DHCP::Infoblox
   class FixedAddressCRUD < CommonCRUD
     attr_reader :network_view
 
-    def initialize(connection, network_view)
+    def initialize(connection, network_view, used_ips_search_type)
       @memoized_hosts = []
       @memoized_condition = nil
       @network_view = network_view
-      super(connection)
+      super(connection, used_ips_search_type)
     end
 
     def all_hosts(subnet_address)
-      network = ::Infoblox::Fixedaddress.find(@connection, 'network' => subnet_address, 'network_view' => network_view,
-                                              '_max_results' => 2147483646) #2**(32-cidr_to_i(subnet_address)))
+      if @used_ips_search_type == 'used'
+        addresses = ::Infoblox::Ipv4address.find(
+          @connection,
+          'network' => subnet_address,
+          'status' => 'USED',
+          '_max_results' => 2147483646)
+        network = addresses.map do |address|
+          if address.mac_address.nil? || address.mac_address.empty?
+            checked_mac = '00:00:00:00:00:00'
+          else
+            checked_mac = address.mac_address
+          end
+          ::Infoblox::Fixedaddress.new(
+            :name => address.names[0],
+            :ipv4addr => address.ip_address,
+            :mac => checked_mac
+          )
+        end
+      else
+        network = ::Infoblox::Fixedaddress.find(
+          @connection,
+          'network' => subnet_address,
+          'network_view' => network_view,
+          '_max_results' => 2147483646) #2**(32-cidr_to_i(subnet_address)))
+      end
+
       network.map { |h| build_reservation(h.name, h, subnet_address) }.compact
     end
 

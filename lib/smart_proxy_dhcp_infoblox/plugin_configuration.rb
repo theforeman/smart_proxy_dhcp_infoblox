@@ -22,10 +22,16 @@ module Proxy::DHCP::Infoblox
       c.singleton_dependency :unused_ips, lambda { ::Proxy::DHCP::FreeIps.new(settings[:blacklist_duration_minutes]) }
 
       c.dependency :host_ipv4_crud, (lambda {
-        ::Proxy::DHCP::Infoblox::HostIpv4AddressCRUD.new(c.get_dependency(:connection), settings[:dns_view])
+        ::Proxy::DHCP::Infoblox::HostIpv4AddressCRUD.new(
+          c.get_dependency(:connection),
+          settings[:dns_view],
+          settings[:used_ips_search_type])
       })
       c.dependency :fixed_address_crud, (lambda {
-        ::Proxy::DHCP::Infoblox::FixedAddressCRUD.new(c.get_dependency(:connection), settings[:network_view])
+        ::Proxy::DHCP::Infoblox::FixedAddressCRUD.new(
+          c.get_dependency(:connection),
+          settings[:network_view],
+          settings[:used_ips_search_type])
       })
       c.dependency :grid_restart, lambda { ::Proxy::DHCP::Infoblox::GridRestart.new(c.get_dependency(:connection)) }
       c.dependency :dhcp_provider, (lambda {

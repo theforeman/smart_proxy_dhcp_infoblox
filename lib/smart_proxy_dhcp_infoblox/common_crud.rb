@@ -10,8 +10,9 @@ module ::Proxy::DHCP::Infoblox
 
     attr_reader :connection
 
-    def initialize(connection)
+    def initialize(connection, used_ips_search_type)
       @connection = connection
+      @used_ips_search_type = used_ips_search_type
     end
 
     def all_leases(network_address, subnet)

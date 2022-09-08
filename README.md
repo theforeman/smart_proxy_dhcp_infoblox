@@ -39,11 +39,17 @@ Configuration options for this plugin are in `/etc/foreman-proxy/settings.d/dhcp
 * username: API Username
 * password: API Password
 * record_type: host / fixedaddress (see different record types chapter)
+* used_ips_search_type: record_type / used
 
 ## Different record types
 The main difference between host and fixedaddress is that a host record already includes the dns records. It's an infoblox object that includes dhcp/a record/ptr records. If you use the host objects there is no need to use a dns smart proxy. Everything gets handled inside the dhcp smart proxy. This does however limit functionality. You can't delete conflicting records or you can't change dns names using foreman gui. Beware when editing host objects manually in infoblox, once you delete a host in foreman all associated host objects get deleted.
 
 If you chose to use fixedaddress you'll need to use the infoblox dns smart proxy (https://github.com/theforeman/smart_proxy_dns_infoblox) if you want to manage dns records.
+
+## Used IP search type
+When using "record_type" here, used IPs will be looked up among the record type you select on the record_type setting (host or fixedaddress). So everything which is not a host or a fixedaddress (depending on the setting), will be defined as free and can be selected as an IP to provision a host.
+If the IP is used by just a DNS A entry for example, this can lead to conflicts. If "used" is set here, any usage of an IP will mark it as used and the IP will not be selected as free ip to provision a host.
+Usages without a mac address will get a dummy mac address ("00:00:00:00:00:00"), when Foreman looks for "all_hosts".
 
 ## SSL
 
