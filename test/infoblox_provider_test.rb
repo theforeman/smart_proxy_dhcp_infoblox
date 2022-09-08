@@ -12,6 +12,7 @@ class InfobloxProviderTest < Test::Unit::TestCase
     @unused_ips = Object.new
     @managed_subnets = nil
     @network_view = "another"
+    @used_ips_search_type = 'record_type'
 
     @network = Infoblox::Network.new(:network => '192.168.42.0/24')
     @subnet = ::Proxy::DHCP::Subnet.new('192.168.42.0', '255.255.255.0')
@@ -42,7 +43,7 @@ class InfobloxProviderTest < Test::Unit::TestCase
   end
 
   def test_leases
-    @crud = ::Proxy::DHCP::Infoblox::CommonCRUD.new(@connection)
+    @crud = ::Proxy::DHCP::Infoblox::CommonCRUD.new(@connection, @used_ips_search_type)
     @provider = Proxy::DHCP::Infoblox::Provider.new(@connection, @crud, @restart_grid,
                                                     @unused_ips, @managed_subnets, @network_view)
 
@@ -52,7 +53,7 @@ class InfobloxProviderTest < Test::Unit::TestCase
   end
 
   def test_nonclass_leases
-    @crud = ::Proxy::DHCP::Infoblox::CommonCRUD.new(@connection)
+    @crud = ::Proxy::DHCP::Infoblox::CommonCRUD.new(@connection,@used_ips_search_type)
     @provider = Proxy::DHCP::Infoblox::Provider.new(@connection, @crud, @restart_grid,
                                                     @unused_ips, @managed_subnets, @network_view)
 

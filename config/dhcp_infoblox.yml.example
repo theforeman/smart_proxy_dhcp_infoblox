@@ -13,6 +13,11 @@
 # using "host" setting make sure domain exists in Infoblox.
 :record_type: 'fixedaddress'
 
+# Search type used when looking for used IPs: can be "record_type" or "used". The latter can be used when you want to include all "USED"
+# IPs in the search for used IPs, so that only really "UNUSED" (no Host, no DNS object, no DHCP Range, not unmanaged, etc.) are used, when
+# searching for a unused IP. Defaults to "record_type", which uses the record_type selected above to look for used IPs.
+#:used_ips_search_type: 'record_type'
+
 # View used for fixedaddress record type.
 #:network_view: 'default'
 

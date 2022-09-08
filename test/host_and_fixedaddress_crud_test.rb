@@ -93,7 +93,7 @@ class HostCrudTest < Test::Unit::TestCase
   def setup
     @connection = Object.new
     @view = "something"
-    @crud = ::Proxy::DHCP::Infoblox::HostIpv4AddressCRUD.new(@connection, @view)
+    @crud = ::Proxy::DHCP::Infoblox::HostIpv4AddressCRUD.new(@connection, @view, 'record_type')
 
     @entity = ::Infoblox::Host
 
@@ -115,15 +115,48 @@ class HostCrudTest < Test::Unit::TestCase
       :ipv4addrs => [{ :ipv4addr => @ip, :mac => '00:01:02:03:05:07', :nextserver => @nextserver, :use_nextserver => true,
                       :bootfile => @filename, :use_bootfile => true, :configure_for_dhcp => true }])
 
+    @ipv4address = ::Infoblox::Ipv4address.new(
+      :names => [@hostname],
+      :ip_address => @ip,
+      :mac_address => @mac
+    )
+
+    @ipv4address_dnsonly = ::Infoblox::Ipv4address.new(
+      :names => ['dnsonly.test.com'],
+      :ip_address => '192.168.42.2',
+      :mac_address => ''
+    )
+
     @reservation = ::Proxy::DHCP::Reservation.new(@hostname, @ip, @mac, ::Proxy::DHCP::Subnet.new(@subnet_ip, '255.255.255.0'),
                                                   :hostname => @hostname, :nextServer => @nextserver, :filename => @filename,
                                                   :deleteable => true)
+
+    @reservation_without_opts = ::Proxy::DHCP::Reservation.new(@hostname, @ip, @mac, ::Proxy::DHCP::Subnet.new(@subnet_ip, '255.255.255.0'),
+                                                             :hostname => @hostname, :deleteable => true)
+
+    @reservation_dnsonly = ::Proxy::DHCP::Reservation.new('dnsonly.test.com', '192.168.42.2', '00:00:00:00:00:00',
+                                                        ::Proxy::DHCP::Subnet.new(@subnet_ip, '255.255.255.0'),
+                                                        :hostname => 'dnsonly.test.com', :deleteable => true)
   end
 
-  def test_all_hosts
+  def test_all_hosts_with_find_by_record_type
     ::Infoblox::Host.expects(:find).with(@connection, 'ipv4addr~' => '192\.168\.42\..+', 'view' => @view,
                                          '_max_results' => 2147483646).returns([@host])
     assert_equal @reservation, @crud.all_hosts('192.168.42.0/24').first
+  end
+
+  def test_all_hosts_with_find_by_used
+    @crud_used = ::Proxy::DHCP::Infoblox::HostIpv4AddressCRUD.new(@connection, @view, 'used')
+    ::Infoblox::Ipv4address.expects(:find).with(@connection, 'network' => '192.168.42.0/24', 'status' => 'USED',
+                                         '_max_results' => 2147483646).returns([@ipv4address])
+    assert_equal @reservation_without_opts, @crud_used.all_hosts('192.168.42.0/24').first
+  end
+
+  def test_all_hosts_with_find_by_used_dns_record_creates_reservation
+    @crud_dnsonly = ::Proxy::DHCP::Infoblox::HostIpv4AddressCRUD.new(@connection, @view, 'used')
+    ::Infoblox::Ipv4address.expects(:find).with(@connection, 'network' => '192.168.42.0/24', 'status' => 'USED',
+                                                '_max_results' => 2147483646).returns([@ipv4address_dnsonly])
+    assert_equal @reservation_dnsonly, @crud_dnsonly.all_hosts('192.168.42.0/24').first
   end
 
   def test_build_host
@@ -166,7 +199,7 @@ class FixedaddressCrudTest < Test::Unit::TestCase
   def setup
     @connection = Object.new
     @network_view = "something"
-    @crud = ::Proxy::DHCP::Infoblox::FixedAddressCRUD.new(@connection, @network_view)
+    @crud = ::Proxy::DHCP::Infoblox::FixedAddressCRUD.new(@connection, @network_view, 'record_type')
 
     @entity = ::Infoblox::Fixedaddress
 
@@ -184,14 +217,47 @@ class FixedaddressCrudTest < Test::Unit::TestCase
       :name => 'another.test.com',
       :ipv4addr => @ip, :mac => '00:01:02:03:05:07', :network_view => @network_view)
 
+    @ipv4address = ::Infoblox::Ipv4address.new(
+      :names => [@hostname],
+      :ip_address => @ip,
+      :mac_address => @mac
+    )
+
+    @ipv4address_dnsonly = ::Infoblox::Ipv4address.new(
+      :names => ['dnsonly.test.com'],
+      :ip_address => '192.168.42.2',
+      :mac_address => ''
+    )
+
     @reservation = ::Proxy::DHCP::Reservation.new(@hostname, @ip, @mac, ::Proxy::DHCP::Subnet.new(@subnet_ip, '255.255.255.0'),
                                                   :deleteable => true, :hostname => @hostname)
+
+    @reservation_without_opts = ::Proxy::DHCP::Reservation.new(@hostname, @ip, @mac, ::Proxy::DHCP::Subnet.new(@subnet_ip, '255.255.255.0'),
+                                                             :hostname => @hostname, :deleteable => true)
+
+    @reservation_dnsonly = ::Proxy::DHCP::Reservation.new('dnsonly.test.com', '192.168.42.2', '00:00:00:00:00:00',
+                                                        ::Proxy::DHCP::Subnet.new(@subnet_ip, '255.255.255.0'),
+                                                        :hostname => 'dnsonly.test.com', :deleteable => true)
   end
 
-  def test_all_hosts
+  def test_all_hosts_with_find_by_record_type
     ::Infoblox::Fixedaddress.expects(:find).with(@connection, 'network' => '192.168.42.0/24', 'network_view' => @network_view,
                                                  '_max_results' => 2147483646).returns([@host])
     assert_equal @reservation, @crud.all_hosts('192.168.42.0/24').first
+  end
+
+  def test_all_hosts_with_find_by_used
+    @crud_used = ::Proxy::DHCP::Infoblox::FixedAddressCRUD.new(@connection, @network_view, 'used')
+    ::Infoblox::Ipv4address.expects(:find).with(@connection, 'network' => '192.168.42.0/24', 'status' => 'USED',
+                                                '_max_results' => 2147483646).returns([@ipv4address])
+    assert_equal @reservation_without_opts, @crud_used.all_hosts('192.168.42.0/24').first
+  end
+
+  def test_all_hosts_with_find_by_used_dns_record_creates_reservation
+    @crud_dnsonly = ::Proxy::DHCP::Infoblox::FixedAddressCRUD.new(@connection, @network_view, 'used')
+    ::Infoblox::Ipv4address.expects(:find).with(@connection, 'network' => '192.168.42.0/24', 'status' => 'USED',
+                                                '_max_results' => 2147483646).returns([@ipv4address_dnsonly])
+    assert_equal @reservation_dnsonly, @crud_dnsonly.all_hosts('192.168.42.0/24').first
   end
 
   def test_build_host

@@ -5,21 +5,43 @@ module ::Proxy::DHCP::Infoblox
   class HostIpv4AddressCRUD < CommonCRUD
     attr_reader :dns_view
 
-    def initialize(connection, dns_view)
+    def initialize(connection, dns_view, used_ips_search_type)
       @memoized_hosts = []
       @memoized_condition = nil
       @dns_view = dns_view
-      super(connection)
+      super(connection, used_ips_search_type)
     end
 
     def all_hosts(subnet_address)
       address_range_regex = NetworkAddressesRegularExpressionGenerator.new.generate_regex(subnet_address)
 
-      hosts = ::Infoblox::Host.find(
-        @connection,
-        'ipv4addr~' => address_range_regex,
-        'view' => dns_view,
-        '_max_results' => 2147483646)
+      if @used_ips_search_type == 'used'
+        addresses = ::Infoblox::Ipv4address.find(
+          @connection,
+          'network' => subnet_address,
+          'status' => 'USED',
+          '_max_results' => 2147483646
+        )
+        hosts = addresses.map do |address|
+          if address.mac_address.nil? || address.mac_address.empty?
+            checked_mac = '00:00:00:00:00:00'
+          else
+            checked_mac = address.mac_address
+          end
+          ::Infoblox::Host.new(
+            :name => address.names[0],
+            :ipv4addrs => [{ :name => address.names[0], :ipv4addr => address.ip_address, :mac => checked_mac,
+                             :configure_for_dhcp => true }]
+          )
+        end
+      else
+        hosts = ::Infoblox::Host.find(
+          @connection,
+          'ipv4addr~' => address_range_regex,
+          'view' => dns_view,
+          '_max_results' => 2147483646
+        )
+      end
 
       ip_addr_matcher = Regexp.new(address_range_regex) # pre-compile the regex
       hosts.map do |host|
