@@ -11,12 +11,11 @@ module Proxy::DHCP::Infoblox
 
     validate_presence :username, :password
 
-    requires :dhcp, '>= 1.13'
+    requires :dhcp, '>= 3.2'
 
     load_classes ::Proxy::DHCP::Infoblox::PluginConfiguration
-    load_validators :record_type_validator => ::Proxy::DHCP::Infoblox::RecordTypeValidator
     load_dependency_injection_wirings ::Proxy::DHCP::Infoblox::PluginConfiguration
 
-    validate :record_type, :record_type_validator => true
+    validate :record_type, enum: %w[host fixedaddress]
   end
 end
