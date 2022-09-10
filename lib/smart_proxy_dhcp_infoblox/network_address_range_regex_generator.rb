@@ -47,6 +47,7 @@ module ::Proxy::DHCP::Infoblox
 
     class MergedNode
       attr_accessor :value, :children
+
       def initialize(a_node)
         @value = [a_node.value].flatten
         @children = a_node.children
