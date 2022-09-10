@@ -66,7 +66,7 @@ module ::Proxy::DHCP::Infoblox
       end
 
       def value_as_regex
-        (value.size < 2) ? value.first.to_s : "[#{value.join('')}]"
+        (value.size < 2) ? value.first.to_s : "[#{value.join}]"
       end
 
       def ==(other)
