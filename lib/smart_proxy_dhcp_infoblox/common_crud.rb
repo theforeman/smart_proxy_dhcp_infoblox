@@ -19,6 +19,7 @@ module ::Proxy::DHCP::Infoblox
       ::Infoblox::Lease.find(@connection, 'address~' => address_range_regex).map do |lease|
         # Infoblox can return MAC address set to nil
         next unless lease.hardware
+
         Proxy::DHCP::Lease.new(
           lease.client_hostname,
           lease.address,
@@ -34,6 +35,7 @@ module ::Proxy::DHCP::Infoblox
 
     def find_record(subnet_address, an_address)
       return find_record_by_ip(subnet_address, an_address) if Resolv::IPv4::Regex =~ an_address
+
       find_record_by_mac(subnet_address, an_address)
     end
 
@@ -58,19 +60,23 @@ module ::Proxy::DHCP::Infoblox
       if options[:mac] != existing_host.mac || options[:hostname] != existing_name
         raise Proxy::DHCP::Collision, "Record #{options[:ip]} conflicts with an existing record."
       end
+
       raise Proxy::DHCP::AlreadyExists, "Record #{options[:ip]} already exists."
     end
 
     def del_record(_, record)
       raise InvalidRecord, "#{record} is static - unable to delete" unless record.deleteable?
+
       found = find_hosts('ipv4addr' => record.ip).first
       return if found.nil?
+
       found.delete
     end
 
     def del_records_by_ip(ip_address)
       found = find_hosts({ 'ipv4addr' => ip_address }, 2147483646)
       return if found.empty?
+
       found.each { |record| record.delete }
       nil
     end
@@ -78,6 +84,7 @@ module ::Proxy::DHCP::Infoblox
     def del_record_by_mac(mac_address)
       found = find_hosts('mac' => mac_address).first
       return if found.nil?
+
       found.delete
       nil
     end

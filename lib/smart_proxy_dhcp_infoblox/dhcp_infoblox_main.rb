@@ -93,6 +93,7 @@ module Proxy::DHCP::Infoblox
       network = ::Infoblox::Network.find(connection, 'network' => network_address, 'network_view' => network_view,
                                          '_max_results' => 1).first
       raise "Subnet #{network_address} not found in network view #{network_view}" if network.nil?
+
       network
     end
 

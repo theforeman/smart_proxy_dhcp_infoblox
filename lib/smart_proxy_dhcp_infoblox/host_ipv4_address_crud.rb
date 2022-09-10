@@ -28,12 +28,14 @@ module ::Proxy::DHCP::Infoblox
     def find_record_by_ip(subnet_address, ip_address)
       found = find_hosts('ipv4addr' => ip_address).first
       return nil if found.nil?
+
       build_reservation(found.name, found.ipv4addrs.find { |ip| ip.ipv4addr == ip_address }, subnet_address)
     end
 
     def find_records_by_ip(subnet_address, ip_address)
       found = find_hosts({ 'ipv4addr' => ip_address }, 2147483646)
       return [] if found.empty?
+
       to_return = found.map { |record| build_reservation(record.name, record.ipv4addrs.find { |ip| ip.ipv4addr == ip_address }, subnet_address) }
       to_return.compact
     end
@@ -41,6 +43,7 @@ module ::Proxy::DHCP::Infoblox
     def find_record_by_mac(subnet_address, mac_address)
       found = find_hosts('mac' => mac_address).first
       return nil if found.nil?
+
       build_reservation(found.name, found.ipv4addrs.find { |ip| ip.mac == mac_address }, subnet_address)
     end
 
@@ -51,6 +54,7 @@ module ::Proxy::DHCP::Infoblox
 
     def find_hosts(condition, max_results = 1)
       return @memoized_hosts if (!@memoized_hosts.empty? && @memoized_condition == condition)
+
       @memoized_condition = condition
       @memoized_hosts = ::Infoblox::Host.find(@connection, condition.merge('view' => dns_view,
                                                                            '_max_results' => max_results))

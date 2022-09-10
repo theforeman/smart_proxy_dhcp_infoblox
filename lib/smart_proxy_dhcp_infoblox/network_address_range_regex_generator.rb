@@ -12,6 +12,7 @@ module ::Proxy::DHCP::Infoblox
 
       def add_children(values)
         return if values.empty?
+
         node = (found = children.find { |n| n.value == values.first }).nil? ? add_child(Node.new(values.first)) : found
         node.add_children(values[1..-1])
       end
@@ -21,6 +22,7 @@ module ::Proxy::DHCP::Infoblox
         return 1 if other.value.to_s == '0?'
         return 0 if value == other.value
         return -1 if value < other.value
+
         1
       end
 
@@ -33,6 +35,7 @@ module ::Proxy::DHCP::Infoblox
       def group_children
         children.each { |n| n.group_children }
         return if children.size < 2
+
         @children = children[1..-1].each_with_object([MergedNode.new(children.first)]) do |to_group, grouped|
           current = MergedNode.new(to_group)
           found = grouped.find { |g| ((g.value != ['0?'] && current.value != ['0?']) || (current.value == ['0?'] && g.value == ['0?'])) && (g.children == current.children) }
@@ -68,6 +71,7 @@ module ::Proxy::DHCP::Infoblox
 
       def ==(other)
         return false if self.class != other.class
+
         value == other.value
       end
     end
