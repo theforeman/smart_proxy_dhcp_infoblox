@@ -1,4 +1,4 @@
-require 'smart_proxy_dhcp_infoblox/ip_address_arithmetic'
+require 'ipaddr'
 
 module ::Proxy::DHCP::Infoblox
   class RangeRegularExpressionGenerator
@@ -107,16 +107,14 @@ module ::Proxy::DHCP::Infoblox
   end
 
   class NetworkAddressesRegularExpressionGenerator
-    include IpAddressArithmetic
-
     def generate_regex(network_and_cidr)
       range_to_regex(network_cidr_range_octets(network_and_cidr))
     end
 
     def network_cidr_range_octets(network_and_cidr)
-      range = network_cidr_to_range(network_and_cidr)
-      range_start_octets = range.first.split('.').map(&:to_i)
-      range_end_octets = range.last.split('.').map(&:to_i)
+      range = IPAddr.new(network_and_cidr).to_range
+      range_start_octets = range.first.to_s.split('.').map(&:to_i)
+      range_end_octets = range.last.to_s.split('.').map(&:to_i)
 
       (0..3).map { |i| [range_start_octets[i], range_end_octets[i]] }
     end

@@ -14,7 +14,7 @@ module ::Proxy::DHCP::Infoblox
 
     def all_hosts(subnet_address)
       network = ::Infoblox::Fixedaddress.find(@connection, 'network' => subnet_address, 'network_view' => network_view,
-                                              '_max_results' => 2147483646) #2**(32-cidr_to_i(subnet_address)))
+                                              '_max_results' => 2147483646)
       network.map { |h| build_reservation(h.name, h, subnet_address) }.compact
     end
 

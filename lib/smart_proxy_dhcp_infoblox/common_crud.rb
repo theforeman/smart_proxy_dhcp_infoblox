@@ -1,12 +1,11 @@
+require 'ipaddr'
 require 'resolv'
-require 'smart_proxy_dhcp_infoblox/ip_address_arithmetic'
 require 'smart_proxy_dhcp_infoblox/network_address_range_regex_generator'
 require "proxy/validations"
 
 module ::Proxy::DHCP::Infoblox
   class CommonCRUD
     include Proxy::Validations
-    include IpAddressArithmetic
 
     attr_reader :connection
 
@@ -102,8 +101,8 @@ module ::Proxy::DHCP::Infoblox
       # Might be useful to extend the model to include these
       opts[:nextServer] = host.nextserver if (host.respond_to?(:use_nextserver) && host.use_nextserver)
       opts[:filename] = host.bootfile if (host.respond_to?(:use_bootfile) && host.use_bootfile)
-      subnet = ::Proxy::DHCP::Subnet.new(full_subnet_address.split('/').first,
-                                         cidr_to_ip_mask(cidr_to_i(full_subnet_address.split('/').last)))
+      addr = IPAddr.new(full_subnet_address)
+      subnet = ::Proxy::DHCP::Subnet.new(addr.to_s, addr.netmask)
 
       Proxy::DHCP::Reservation.new(name, host.ipv4addr, host.mac, subnet, opts)
     end
