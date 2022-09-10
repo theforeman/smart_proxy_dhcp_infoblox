@@ -97,11 +97,13 @@ module ::Proxy::DHCP::Infoblox
 
       opts = { :hostname => name }
       opts[:deleteable] = true
-      # TODO: nextserver, use_nextserver, bootfile, and use_bootfile attrs exist but are not available in the Fixedaddress model
+      # TODO: nextserver, use_nextserver, bootfile, and use_bootfile attrs exist
+      # but are not available in the Fixedaddress model
       # Might be useful to extend the model to include these
       opts[:nextServer] = host.nextserver if (host.respond_to?(:use_nextserver) && host.use_nextserver)
       opts[:filename] = host.bootfile if (host.respond_to?(:use_bootfile) && host.use_bootfile)
-      subnet = ::Proxy::DHCP::Subnet.new(full_subnet_address.split('/').first, cidr_to_ip_mask(cidr_to_i(full_subnet_address.split('/').last)))
+      subnet = ::Proxy::DHCP::Subnet.new(full_subnet_address.split('/').first,
+                                         cidr_to_ip_mask(cidr_to_i(full_subnet_address.split('/').last)))
 
       Proxy::DHCP::Reservation.new(name, host.ipv4addr, host.mac, subnet, opts)
     end

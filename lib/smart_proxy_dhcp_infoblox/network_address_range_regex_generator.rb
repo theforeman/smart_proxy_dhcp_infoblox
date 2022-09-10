@@ -38,7 +38,10 @@ module ::Proxy::DHCP::Infoblox
 
         @children = children[1..-1].each_with_object([MergedNode.new(children.first)]) do |to_group, grouped|
           current = MergedNode.new(to_group)
-          found = grouped.find { |g| ((g.value != ['0?'] && current.value != ['0?']) || (current.value == ['0?'] && g.value == ['0?'])) && (g.children == current.children) }
+          found = grouped.find do |g|
+            ((g.value != ['0?'] && current.value != ['0?']) || (current.value == ['0?'] && g.value == ['0?'])) && \
+              (g.children == current.children)
+          end
           found.nil? ? grouped.push(current) : found.merge(current)
         end
       end

@@ -14,7 +14,8 @@ module Proxy::DHCP::Infoblox
       c.dependency :connection, (lambda {
         ::Infoblox.wapi_version = '2.0'
         ::Infoblox::Connection.new(:username => settings[:username], :password => settings[:password],
-                                   :host => settings[:server], :ssl_opts => { :verify => !ENV['FOREMAN_INFOBLOX_NOSSLVERIFY'] },
+                                   :host => settings[:server],
+                                   :ssl_opts => { :verify => !ENV['FOREMAN_INFOBLOX_NOSSLVERIFY'] },
                                    :logger => ::Proxy::LogBuffer::Decorator.instance)
       })
 
@@ -30,7 +31,7 @@ module Proxy::DHCP::Infoblox
       c.dependency :dhcp_provider, (lambda {
         ::Proxy::DHCP::Infoblox::Provider.new(
           c.get_dependency(:connection),
-          (settings[:record_type] == 'host') ? c.get_dependency(:host_ipv4_crud) : c.get_dependency(:fixed_address_crud),
+          c.get_dependency(settings[:record_type] == 'host' ? :host_ipv4_crud : :fixed_address_crud),
           c.get_dependency(:grid_restart),
           c.get_dependency(:unused_ips),
           settings[:subnets],
