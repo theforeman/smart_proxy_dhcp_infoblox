@@ -9,7 +9,7 @@ module ::Proxy::DHCP::Infoblox
       an_address.split('.').inject(0) { |a, c| (a << 8) + c.to_i }
     end
 
-    def i_to_ipv4(i)
+    def i_to_ipv4(i) # rubocop:todo Naming/MethodParameterName
       (0..3).inject([]) { |a, c| a.push((i >> (c * 8)) & 0xFF) }.reverse.join('.')
     end
 

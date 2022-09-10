@@ -10,7 +10,7 @@ module Proxy::DHCP::Infoblox
       require 'smart_proxy_dhcp_infoblox/dhcp_infoblox_main'
     end
 
-    def load_dependency_injection_wirings(c, settings)
+    def load_dependency_injection_wirings(c, settings) # rubocop:todo Naming/MethodParameterName
       c.dependency :connection, (lambda {
         ::Infoblox.wapi_version = '2.0'
         ::Infoblox::Connection.new(:username => settings[:username], :password => settings[:password],
