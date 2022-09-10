@@ -1,16 +1,12 @@
 inherit_from: .rubocop_todo.yml
 
 AllCops:
-  TargetRubyVersion: 2.0
+  TargetRubyVersion: 2.5
   Exclude:
     - 'test/**/*'
     - 'vendor/**/*'
 
 Metrics:
-  Enabled: false
-
-# There's if statement in the Gemfile
-Bundler/DuplicatedGem:
   Enabled: false
 
 Layout/LeadingCommentSpace:
