@@ -17,9 +17,9 @@ module ::Proxy::DHCP::Infoblox
 
       hosts = ::Infoblox::Host.find(
         @connection,
-          'ipv4addr~' => address_range_regex,
-          'view' => dns_view,
-          '_max_results' => 2147483646)
+        'ipv4addr~' => address_range_regex,
+        'view' => dns_view,
+        '_max_results' => 2147483646)
 
       ip_addr_matcher = Regexp.new(address_range_regex) # pre-compile the regex
       hosts.map { |host| build_reservation(host.name, host.ipv4addrs.find { |ip| ip_addr_matcher =~ ip.ipv4addr }, subnet_address) }.compact
