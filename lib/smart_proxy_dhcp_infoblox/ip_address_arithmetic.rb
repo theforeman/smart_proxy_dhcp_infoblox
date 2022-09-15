@@ -1,8 +1,8 @@
 module ::Proxy::DHCP::Infoblox
   module IpAddressArithmetic
     def cidr_to_ip_mask(prefix_length)
-      bitmask = 0xFFFFFFFF ^ (2**(32 - prefix_length) - 1)
-      (0..3).map { |i| (bitmask >> i * 8) & 0xFF }.reverse.join('.')
+      bitmask = 0xFFFFFFFF ^ ((2**(32 - prefix_length)) - 1)
+      (0..3).map { |i| (bitmask >> (i * 8)) & 0xFF }.reverse.join('.')
     end
 
     def ipv4_to_i(an_address)
@@ -14,7 +14,7 @@ module ::Proxy::DHCP::Infoblox
     end
 
     def cidr_to_bitmask(prefix_length)
-      0xFFFFFFFF ^ (2**(32 - prefix_length) - 1)
+      0xFFFFFFFF ^ ((2**(32 - prefix_length)) - 1)
     end
 
     def cidr_to_i(an_address_with_cidr)
