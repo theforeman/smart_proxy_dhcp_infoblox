@@ -55,7 +55,6 @@ module ::Proxy::DHCP::Infoblox
 
     def build_host(options)
       host = ::Infoblox::Fixedaddress.new(:connection => @connection)
-      extra_options = [{ :name => 'host-name', :value => options[:hostname] }]
       host.name = options[:hostname]
       host.ipv4addr = options[:ip]
       host.mac = options[:mac]
@@ -64,7 +63,10 @@ module ::Proxy::DHCP::Infoblox
       host.bootfile = options[:filename]
       host.use_bootfile = true
       host.network_view = network_view
-      host.options = Proxy::DHCP::Infoblox::Plugin.settings.options + extra_options
+      host.options = [{ :name => 'host-name', :value => options[:hostname] }]
+      if (setting_options = Proxy::DHCP::Infoblox::Plugin.settings.options)
+        host.options.merge!(setting_options)
+      end
       host
     end
   end
