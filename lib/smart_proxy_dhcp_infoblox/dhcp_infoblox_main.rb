@@ -1,11 +1,10 @@
+require 'ipaddr'
 require 'dhcp_common/server'
-require 'smart_proxy_dhcp_infoblox/ip_address_arithmetic'
 
 module Proxy::DHCP::Infoblox
   class Provider < ::Proxy::DHCP::Server
     include Proxy::Log
     include Proxy::Util
-    include IpAddressArithmetic
 
     attr_reader :connection, :crud, :restart_grid, :network_view
 
@@ -21,8 +20,9 @@ module Proxy::DHCP::Infoblox
 
     def subnets
       ::Infoblox::Network.all(connection).map do |network|
-        address, prefix_length = network.network.split("/")
-        netmask = cidr_to_ip_mask(prefix_length.to_i)
+        addr = IPAddr.new(network.network)
+        address = addr.to_s
+        netmask = addr.netmask
         managed_subnet?("#{address}/#{netmask}") ? Proxy::DHCP::Subnet.new(address, netmask, {}) : nil
       end.compact
     end
@@ -73,9 +73,8 @@ module Proxy::DHCP::Infoblox
 
     require 'dhcp_common/subnet'
     def get_subnet(subnet_address)
-      address, prefix_length = full_network_address(subnet_address).split("/")
-      netmask = cidr_to_ip_mask(prefix_length.to_i)
-      ::Proxy::DHCP::Subnet.new(address, netmask)
+      addr = IPAddr.new(full_network_address(subnet_address))
+      ::Proxy::DHCP::Subnet.new(addr.to_s, addr.netmask)
     end
 
     def find_ip_by_mac_address_and_range(subnet, mac_address, from_address, to_address)
