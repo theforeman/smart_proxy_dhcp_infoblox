@@ -19,5 +19,7 @@ module Proxy::DHCP::Infoblox
 
     validate :record_type, enum: %w[host fixedaddress]
     validate :used_ips_search_type, enum: %w[record_type used]
+
+    start_services :unused_ips
   end
 end
