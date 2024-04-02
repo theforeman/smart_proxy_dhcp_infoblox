@@ -87,7 +87,10 @@ module ::Proxy::DHCP::Infoblox
       host.bootfile = options[:filename]
       host.use_bootfile = true
       host.network_view = network_view
-      host.options = Proxy::DHCP::Infoblox::Plugin.settings.options
+      host.options = [{ :name => 'host-name', :value => options[:hostname] }]
+      if (setting_options = Proxy::DHCP::Infoblox::Plugin.settings.options)
+        host.options.merge!(setting_options)
+      end
       host
     end
   end
