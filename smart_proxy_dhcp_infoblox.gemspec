@@ -9,7 +9,10 @@ Gem::Specification.new do |s|
   s.homepage    = 'https://github.com/theforeman/smart_proxy_dhcp_infoblox'
 
   s.summary     = "Infoblox DHCP provider plugin for Foreman's smart proxy"
-  s.description = "Infoblox DHCP provider plugin for Foreman's smart proxy"
+  s.description = <<~DESC
+    Foreman's Smart Proxy has a pluggable DHCP module. This plugin implements a
+    provider for Infoblox DHCP.
+  DESC
 
   s.files       = Dir['{config,lib,bundler.d}/**/*'] + ['README.md', 'LICENSE']
   s.test_files  = Dir['test/**/*']
