@@ -20,11 +20,11 @@ module Proxy::DHCP::Infoblox
     def find_subnet(address); ::Proxy::DHCP::Subnet.new(address, '255.255.255.0'); end
 
     def subnets
-      ::Infoblox::Network.all(connection).map do |network|
+      ::Infoblox::Network.all(connection).filter_map do |network|
         address, prefix_length = network.network.split("/")
         netmask = cidr_to_ip_mask(prefix_length.to_i)
         managed_subnet?("#{address}/#{netmask}") ? Proxy::DHCP::Subnet.new(address, netmask, {}) : nil
-      end.compact
+      end
     end
 
     def all_hosts(network_address)
