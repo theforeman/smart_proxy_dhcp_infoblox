@@ -23,14 +23,6 @@ Layout/LeadingCommentSpace:
 Layout/MultilineMethodCallBraceLayout:
   Enabled: false
 
-# Don't prefer is_a? over kind_of?
-Style/ClassCheck:
-  Enabled: false
-
-# Don't enforce certain methods, e.g. detect over find
-Style/CollectionMethods:
-  Enabled: false
-
 # Don't enforce documentation
 Style/Documentation:
   Enabled: false
@@ -49,22 +41,10 @@ Style/FrozenStringLiteralComment:
 Style/SymbolArray:
   Enabled: false
 
-Lint/AmbiguousRegexpLiteral:
-  Enabled: false
-
 Lint/AssignmentInCondition:
   Enabled: false
 
-Security/Eval:
-  Enabled: false
-
 Lint/RescueException:
-  Enabled: false
-
-Lint/UnusedBlockArgument:
-  Enabled: false
-
-Lint/UnusedMethodArgument:
   Enabled: false
 
 Style/SymbolProc:
@@ -96,12 +76,6 @@ Style/TernaryParentheses:
 Style/InverseMethods:
   Enabled: false
 
-Bundler/OrderedGems:
-  Enabled: false
-
-Style/Alias:
-  EnforcedStyle: prefer_alias_method
-
 Layout/DotPosition:
   Enabled: false
 
@@ -111,9 +85,6 @@ Style/IfUnlessModifier:
 Style/ConditionalAssignment:
   Enabled: false
 
-Style/EmptyMethod:
-  EnforcedStyle: expanded
-
 Style/ParenthesesAroundCondition:
   Enabled: false
 
@@ -121,13 +92,6 @@ Layout/HashAlignment:
   Enabled: false
 
 Layout/ParameterAlignment:
-  Enabled: false
-
-# disabled until we can configure "+" as concat sign
-Style/LineEndConcatenation:
-  Enabled: false
-
-Style/ParallelAssignment:
   Enabled: false
 
 Performance/RegexpMatch:
