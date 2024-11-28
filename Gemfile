@@ -10,11 +10,10 @@ group :rubocop do
 end
 
 group :test do
-  gem 'ci_reporter_test_unit'
   gem 'concurrent-ruby', '~> 1.0', require: 'concurrent'
   gem 'mocha'
   gem 'rack-test'
   gem 'rake'
-  gem 'smart_proxy', :github => 'theforeman/smart-proxy', :branch => 'develop'
+  gem 'smart_proxy', :github => 'theforeman/smart-proxy', :branch => ENV.fetch('SMART_PROXY_BRANCH', 'develop')
   gem 'test-unit'
 end
