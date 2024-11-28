@@ -94,9 +94,6 @@ Layout/HashAlignment:
 Layout/ParameterAlignment:
   Enabled: false
 
-Performance/RegexpMatch:
-  Enabled: false
-
 Style/ClassAndModuleChildren:
   Enabled: false
 

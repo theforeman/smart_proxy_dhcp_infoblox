@@ -35,7 +35,7 @@ module ::Proxy::DHCP::Infoblox
     end
 
     def find_record(subnet_address, an_address)
-      return find_record_by_ip(subnet_address, an_address) if Resolv::IPv4::Regex =~ an_address
+      return find_record_by_ip(subnet_address, an_address) if Resolv::IPv4::Regex.match?(an_address)
 
       find_record_by_mac(subnet_address, an_address)
     end
