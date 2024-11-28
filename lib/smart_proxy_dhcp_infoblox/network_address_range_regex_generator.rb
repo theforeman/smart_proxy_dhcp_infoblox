@@ -14,7 +14,7 @@ module ::Proxy::DHCP::Infoblox
         return if values.empty?
 
         node = (found = children.find { |n| n.value == values.first }).nil? ? add_child(Node.new(values.first)) : found
-        node.add_children(values[1..-1])
+        node.add_children(values[1..])
       end
 
       def <=>(other)
@@ -36,7 +36,7 @@ module ::Proxy::DHCP::Infoblox
         children.each { |n| n.group_children }
         return if children.size < 2
 
-        @children = children[1..-1].each_with_object([MergedNode.new(children.first)]) do |to_group, grouped|
+        @children = children[1..].each_with_object([MergedNode.new(children.first)]) do |to_group, grouped|
           current = MergedNode.new(to_group)
           found = grouped.find do |g|
             ((g.value != ['0?'] && current.value != ['0?']) || (current.value == ['0?'] && g.value == ['0?'])) && \

@@ -44,9 +44,9 @@ module ::Proxy::DHCP::Infoblox
       end
 
       ip_addr_matcher = Regexp.new(address_range_regex) # pre-compile the regex
-      hosts.map do |host|
+      hosts.filter_map do |host|
         build_reservation(host.name, host.ipv4addrs.find { |ip| ip_addr_matcher =~ ip.ipv4addr }, subnet_address)
-      end.compact
+      end
     end
 
     def find_record_by_ip(subnet_address, ip_address)
@@ -60,9 +60,9 @@ module ::Proxy::DHCP::Infoblox
       found = find_hosts({ 'ipv4addr' => ip_address }, 2147483646)
       return [] if found.empty?
 
-      found.map do |record|
+      found.filter_map do |record|
         build_reservation(record.name, record.ipv4addrs.find { |ip| ip.ipv4addr == ip_address }, subnet_address)
-      end.compact
+      end
     end
 
     def find_record_by_mac(subnet_address, mac_address)

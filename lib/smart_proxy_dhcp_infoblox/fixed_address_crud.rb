@@ -39,7 +39,7 @@ module ::Proxy::DHCP::Infoblox
           '_max_results' => 2147483646) #2**(32-cidr_to_i(subnet_address)))
       end
 
-      network.map { |h| build_reservation(h.name, h, subnet_address) }.compact
+      network.filter_map { |h| build_reservation(h.name, h, subnet_address) }
     end
 
     def find_record_by_ip(subnet_address, ip_address)
