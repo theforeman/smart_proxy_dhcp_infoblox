@@ -3,7 +3,7 @@ require File.expand_path('lib/smart_proxy_dhcp_infoblox/dhcp_infoblox_version', 
 Gem::Specification.new do |s|
   s.name        = 'smart_proxy_dhcp_infoblox'
   s.version     = Proxy::DHCP::Infoblox::VERSION
-  s.license     = 'GPL-3.0'
+  s.license     = 'GPL-3.0-only'
   s.authors     = ['Klaas Demter']
   s.email       = ['demter@atix.de']
   s.homepage    = 'https://github.com/theforeman/smart_proxy_dhcp_infoblox'
