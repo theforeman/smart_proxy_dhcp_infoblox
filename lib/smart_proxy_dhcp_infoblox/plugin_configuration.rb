@@ -8,6 +8,7 @@ module Proxy::DHCP::Infoblox
       require 'smart_proxy_dhcp_infoblox/fixed_address_crud'
       require 'smart_proxy_dhcp_infoblox/grid_restart'
       require 'smart_proxy_dhcp_infoblox/dhcp_infoblox_main'
+      require 'smart_proxy_dhcp_infoblox/infoblox_free_ips'
     end
 
     def load_dependency_injection_wirings(c, settings) # rubocop:todo Naming/MethodParameterName
@@ -19,7 +20,7 @@ module Proxy::DHCP::Infoblox
                                    :logger => ::Proxy::LogBuffer::Decorator.instance)
       })
 
-      c.singleton_dependency :unused_ips, lambda { ::Proxy::DHCP::FreeIps.new(settings[:blacklist_duration_minutes]) }
+      c.singleton_dependency :unused_ips, lambda { ::Proxy::DHCP::Infoblox::FreeIps.new(settings[:blacklist_duration_minutes]) }
 
       c.dependency :host_ipv4_crud, (lambda {
         ::Proxy::DHCP::Infoblox::HostIpv4AddressCRUD.new(
