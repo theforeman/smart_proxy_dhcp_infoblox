@@ -272,6 +272,7 @@ class FixedaddressCrudTest < Test::Unit::TestCase
     assert_equal @filename, built.bootfile
     assert built.use_bootfile
     assert_equal @network_view, built.network_view
+    assert built.instance_variable_get("@options").include?({:name => 'host-name', :value => @hostname})
   end
 
   def test_build_host_with_options
@@ -279,7 +280,7 @@ class FixedaddressCrudTest < Test::Unit::TestCase
       Proxy::DHCP::Infoblox::Plugin.settings.options = [{"name" => "xyz"}]
 
       host = @crud.build_host(:ip => @ip, :mac => @mac, :hostname => @hostname)
-      assert_equal [{"name" => "xyz"}], host.instance_variable_get("@options")
+      assert host.instance_variable_get("@options").include?({"name" => "xyz"})
     ensure
       Proxy::DHCP::Infoblox::Plugin.settings.options = []
     end
