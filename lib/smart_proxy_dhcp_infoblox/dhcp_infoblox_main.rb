@@ -100,5 +100,16 @@ module Proxy::DHCP::Infoblox
     def full_network_address(network_address)
       find_network(network_address).network
     end
+
+    def unused_ip(subnet_address, mac_address, from_address, to_address)
+      network=find_network(subnet_address)
+      subnet=get_subnet(subnet_address)
+      validated_from_address, validated_to_address = subnet.subnet_range_addresses(from_address, to_address)
+      if mac_address
+        r = find_ip_by_mac_address_and_range(subnet, mac_address, validated_from_address, validated_to_address)
+        return r if r
+      end
+      free_ips.find_free_ip(validated_from_address, validated_to_address, network)
+    end
   end
 end
